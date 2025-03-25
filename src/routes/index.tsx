@@ -23,6 +23,8 @@ function Index() {
   const [course, setCourse] = useState<string>("Computer Science");
   const [bio, setBio] = useState<string>("");
   const [vcRate, setVcRate] = useState<number>(0);
+  const [speak, setSpeak] = useState<boolean>(false);
+  const [chat, setChat] = useState<boolean>(false);
   const [interests, setInterests] = useState<string[]>([]);
 
   const downloadImage = () => {
@@ -112,6 +114,8 @@ function Index() {
               left={POSITIONS.vcRate.left + 100 * index}
             />
           ))}
+          {speak && <CircleBlock {...POSITIONS.speak} />}
+          {chat && <CircleBlock {...POSITIONS.chat} />}
           <TextBlock {...POSITIONS.bio} text={bio} />
           {interests.map((interest) => {
             const item = INTERESETS.find((item) => item.id === interest);
@@ -181,6 +185,14 @@ function Index() {
             onChange={(event) => setBio(event.target.value)}
             placeholder="Your bio"
           />
+        </fieldset>
+        <fieldset>
+          <legend>おしゃべり</legend>
+          <input type="checkbox" onChange={(e) => setSpeak(e.target.checked)} />
+        </fieldset>
+        <fieldset>
+          <legend>チャット</legend>
+          <input type="checkbox" onChange={(e) => setChat(e.target.checked)} />
         </fieldset>
         <fieldset>
           <legend>興味のあること</legend>

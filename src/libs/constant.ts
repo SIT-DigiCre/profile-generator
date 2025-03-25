@@ -32,6 +32,14 @@ export const POSITIONS = {
     left: 4100,
     fontSize: 200,
   },
+  speak: {
+    top: 550,
+    left: 6700,
+  },
+  chat: {
+    top: 550,
+    left: 7250,
+  },
 } as const;
 
 export const INTERESETS = [
