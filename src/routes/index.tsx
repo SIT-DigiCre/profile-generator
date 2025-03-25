@@ -76,44 +76,72 @@ function Index() {
   };
 
   return (
-    <div>
-      <input type="file" accept="image/*" onChange={handleImageChange} />
-      <input
-        type="text"
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-        placeholder="Your name"
-      />
-      <input
-        type="text"
-        value={grade}
-        onChange={(event) => setGrade(event.target.value)}
-        placeholder="Your grade"
-      />
-      <input
-        type="text"
-        value={course}
-        onChange={(event) => setCourse(event.target.value)}
-        placeholder="Your course"
-      />
-      <textarea
-        value={bio}
-        onChange={(event) => setBio(event.target.value)}
-        placeholder="Your bio"
-      />
-      <div style={{ position: "relative", display: "inline-block" }}>
-        <img
-          width={BASE_IMG_WIDTH * 0.1}
-          height={BASE_IMG_HEIGHT * 0.1}
-          src="/base.png"
-          alt="Selected"
-        />
-        {profile && <ImageBlock {...POSITIONS.profile} src={profile} />}
-        <TextBlock {...POSITIONS.name} text={name} />
-        <TextBlock {...POSITIONS.grade} text={grade} />
-        <TextBlock {...POSITIONS.course} text={course} />
-        <TextBlock {...POSITIONS.bio} text={bio} />
-        <button onClick={downloadImage}>Download as WebP</button>
+    <div className="wrapper">
+      <div className="preview">
+        <div style={{ position: "relative", display: "inline-block" }}>
+          <img
+            width={BASE_IMG_WIDTH * 0.1}
+            height={BASE_IMG_HEIGHT * 0.1}
+            src="/base.png"
+            alt="Selected"
+          />
+          {profile && <ImageBlock {...POSITIONS.profile} src={profile} />}
+          <TextBlock {...POSITIONS.name} text={name} />
+          <TextBlock {...POSITIONS.grade} text={grade} />
+          <TextBlock {...POSITIONS.course} text={course} />
+          <TextBlock {...POSITIONS.bio} text={bio} />
+        </div>
+        <button onClick={downloadImage}>ダウンロードする</button>
+      </div>
+      <div className="form">
+        <div className="form-control">
+          <label htmlFor="profile">アイコン画像</label>
+          <input
+            id="profile"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+        </div>
+        <div className="form-control">
+          <label htmlFor="name">ハンドルネーム</label>
+          <input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Your name"
+          />
+        </div>
+        <div className="form-control">
+          <label htmlFor="grade">学年</label>
+          <input
+            id="grade"
+            type="text"
+            value={grade}
+            onChange={(event) => setGrade(event.target.value)}
+            placeholder="Your grade"
+          />
+        </div>
+        <div className="form-control">
+          <label htmlFor="course">学科</label>
+          <input
+            id="course"
+            type="text"
+            value={course}
+            onChange={(event) => setCourse(event.target.value)}
+            placeholder="Your course"
+          />
+        </div>
+        <div className="form-control">
+          <label htmlFor="bio">自己紹介</label>
+          <textarea
+            id="bio"
+            value={bio}
+            onChange={(event) => setBio(event.target.value)}
+            placeholder="Your bio"
+          />
+        </div>
       </div>
     </div>
   );
