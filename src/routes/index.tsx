@@ -1,46 +1,84 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   component: Index,
-})
+});
+
+const ASPECT = 0.1;
+const BASE_IMG_WIDTH = 8000;
+const BASE_IMG_HEIGHT = 4500;
+const POSITIONS = {
+  name: {
+    top: 1000,
+    left: 1700,
+    fontSize: 300,
+  },
+  profile: {
+    top: 185,
+    left: 185,
+    width: 1400,
+    height: 1400,
+  },
+  grade: {
+    top: 200,
+    left: 1700,
+    fontSize: 200,
+  },
+  course: {
+    top: 1900,
+    left: 300,
+    fontSize: 200,
+  },
+  bio: {
+    top: 1100,
+    left: 4100,
+    fontSize: 200,
+  },
+} as const;
 
 function Index() {
-  const [image, setImage] = useState<string>("");
-  const [text, setText] = useState<string>("");
-
-  useEffect(() => {
-    const savedImage = localStorage.getItem("profileImage");
-    const savedText = localStorage.getItem("profileText");
-    if (savedImage) {
-      setImage(savedImage);
-    }
-    if (savedText) {
-      setText(savedText);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("profileImage", image);
-    localStorage.setItem("profileText", text);
-  }, [image, text]);
+  const [name, setName] = useState<string>("");
+  const [profile, setProfile] = useState<string>("");
+  const [grade, setGrade] = useState<string>("21st");
+  const [course, setCourse] = useState<string>("Computer Science");
+  const [bio, setBio] = useState<string>("");
 
   const downloadImage = () => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     const img = new Image();
-    img.src = image;
+    img.src = "/base.png";
 
-    img.onload = () => {
+    img.onload = async () => {
+      await document.fonts.ready;
       canvas.width = img.width;
       canvas.height = img.height;
       if (ctx) {
-        // ctxがnullでないことを確認
         ctx.drawImage(img, 0, 0);
-        ctx.font = "24px Arial";
-        ctx.fillStyle = "white";
-        ctx.fillText(text, 20, 40); // テキストを描画
+        ctx.font = "24px Noto Sans JP";
+        ctx.fillStyle = "black";
+        // name
+        ctx.fillText(name, POSITIONS.name.top, POSITIONS.name.left);
+        // icon
+        const profileEl = new Image();
+        profileEl.src = profile;
+        profileEl.style.borderRadius = "9999px";
+        ctx.drawImage(
+          profileEl,
+          POSITIONS.profile.top,
+          POSITIONS.profile.left,
+          POSITIONS.profile.width,
+          POSITIONS.profile.height
+        );
+        // grade
+        ctx.fillText(grade, POSITIONS.grade.top, POSITIONS.grade.left);
+        // course
+        ctx.fillText(course, POSITIONS.course.top, POSITIONS.course.left);
+        // bio
+        // TODO: 折り返し
+        ctx.fillText(bio, POSITIONS.bio.top, POSITIONS.bio.left);
 
         canvas.toBlob((blob) => {
           if (blob) {
@@ -51,22 +89,16 @@ function Index() {
             a.click();
             URL.revokeObjectURL(url);
           }
-        }, "image/webp"); // ここで閉じる
+        }, "image/webp");
       }
     };
-  };
-
-  const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setText(event.target.value);
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
-      };
+      setProfile(URL.createObjectURL(file));
       reader.readAsDataURL(file);
     }
   };
@@ -76,27 +108,94 @@ function Index() {
       <input type="file" accept="image/*" onChange={handleImageChange} />
       <input
         type="text"
-        value={text}
-        onChange={handleTextChange}
-        placeholder="Enter text"
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+        placeholder="Your name"
       />
-      {image && (
-        <div style={{ position: "relative", display: "inline-block" }}>
-          <img src={image} alt="Selected" style={{ maxWidth: "100%" }} />
-          <div
+      <input
+        type="text"
+        value={grade}
+        onChange={(event) => setGrade(event.target.value)}
+        placeholder="Your grade"
+      />
+      <input
+        type="text"
+        value={course}
+        onChange={(event) => setCourse(event.target.value)}
+        placeholder="Your course"
+      />
+      <textarea
+        value={bio}
+        onChange={(event) => setBio(event.target.value)}
+        placeholder="Your bio"
+      />
+      <div style={{ position: "relative", display: "inline-block" }}>
+        <img
+          width={BASE_IMG_WIDTH * 0.1}
+          height={BASE_IMG_HEIGHT * 0.1}
+          src="/base.png"
+          alt="Selected"
+        />
+        {profile && (
+          <img
+            width={POSITIONS.profile.width * ASPECT}
+            height={POSITIONS.profile.height * ASPECT}
+            src={profile}
+            alt="Selected"
             style={{
               position: "absolute",
-              top: "20px",
-              left: "20px",
-              color: "white",
-              fontSize: "24px",
+              top: POSITIONS.profile.top * ASPECT,
+              left: POSITIONS.profile.left * ASPECT,
+              borderRadius: "9999px",
             }}
-          >
-            {text}
-          </div>
-          <button onClick={downloadImage}>Download as WebP</button>
+          />
+        )}
+        <div
+          style={{
+            position: "absolute",
+            top: POSITIONS.name.top * ASPECT,
+            left: POSITIONS.name.left * ASPECT,
+            color: "black",
+            fontSize: POSITIONS.name.fontSize * ASPECT,
+          }}
+        >
+          {name}
         </div>
-      )}
+        <div
+          style={{
+            position: "absolute",
+            top: POSITIONS.grade.top * ASPECT,
+            left: POSITIONS.grade.left * ASPECT,
+            color: "black",
+            fontSize: POSITIONS.grade.fontSize * ASPECT,
+          }}
+        >
+          {grade}
+        </div>
+        <div
+          style={{
+            position: "absolute",
+            top: POSITIONS.course.top * ASPECT,
+            left: POSITIONS.course.left * ASPECT,
+            color: "black",
+            fontSize: POSITIONS.course.fontSize * ASPECT,
+          }}
+        >
+          {course}
+        </div>
+        <div
+          style={{
+            position: "absolute",
+            top: POSITIONS.bio.top * ASPECT,
+            left: POSITIONS.bio.left * ASPECT,
+            color: "black",
+            fontSize: POSITIONS.bio.fontSize * ASPECT,
+          }}
+        >
+          {bio}
+        </div>
+        <button onClick={downloadImage}>Download as WebP</button>
+      </div>
     </div>
   );
-};
+}
