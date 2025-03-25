@@ -22,6 +22,7 @@ function Index() {
   const [grade, setGrade] = useState<string>("21st");
   const [course, setCourse] = useState<string>("Computer Science");
   const [bio, setBio] = useState<string>("");
+  const [vcRate, setVcRate] = useState<number>(0);
   const [interests, setInterests] = useState<string[]>([]);
 
   const downloadImage = () => {
@@ -104,6 +105,13 @@ function Index() {
           <TextBlock {...POSITIONS.name} text={name} />
           <TextBlock {...POSITIONS.grade} text={grade} />
           <TextBlock {...POSITIONS.course} text={course} />
+          {[...Array(vcRate)].map((_, index) => (
+            <CircleBlock
+              key={index}
+              top={POSITIONS.vcRate.top}
+              left={POSITIONS.vcRate.left + 100 * index}
+            />
+          ))}
           <TextBlock {...POSITIONS.bio} text={bio} />
           {interests.map((interest) => {
             const item = INTERESETS.find((item) => item.id === interest);
@@ -154,6 +162,15 @@ function Index() {
             value={course}
             onChange={(event) => setCourse(event.target.value)}
             placeholder="Your course"
+          />
+        </fieldset>
+        <fieldset>
+          <legend>VS出現率</legend>
+          <input
+            type="number"
+            min={0}
+            max={7}
+            onChange={(e) => setVcRate(e.target.value as unknown as number)}
           />
         </fieldset>
         <fieldset>

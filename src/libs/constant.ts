@@ -23,6 +23,10 @@ export const POSITIONS = {
     left: 300,
     fontSize: 200,
   },
+  vcRate: {
+    top: 460,
+    left: 4450,
+  },
   bio: {
     top: 1100,
     left: 4100,
