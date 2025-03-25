@@ -1,4 +1,4 @@
-import { ASPECT } from "#/libs/constant";
+import { RATIO } from "#/libs/constant";
 
 type TextBlockProps = {
   text: string;
@@ -23,12 +23,12 @@ const TextBlock: React.FC<TextBlockProps> = ({
     <span
       style={{
         position: "absolute",
-        top: top * ASPECT,
-        left: left * ASPECT,
-        width: width && width * ASPECT,
-        height: height && height * ASPECT,
+        top: top * RATIO,
+        left: left * RATIO,
+        width: width && width * RATIO,
+        height: height && height * RATIO,
         color: color,
-        fontSize: fontSize && fontSize * ASPECT,
+        fontSize: fontSize && fontSize * RATIO,
       }}
     >
       {text}

@@ -1,4 +1,4 @@
-import { ASPECT } from "#/libs/constant";
+import { RATIO } from "#/libs/constant";
 
 type ImageBlockProps = {
   src: string;
@@ -22,10 +22,10 @@ const ImageBlock: React.FC<ImageBlockProps> = ({
       src={src}
       style={{
         position: "absolute",
-        top: top * ASPECT,
-        left: left * ASPECT,
-        width: width && width * ASPECT,
-        height: height && height * ASPECT,
+        top: top * RATIO,
+        left: left * RATIO,
+        width: width && width * RATIO,
+        height: height && height * RATIO,
         borderRadius: rounded ? "9999px" : undefined,
       }}
     />

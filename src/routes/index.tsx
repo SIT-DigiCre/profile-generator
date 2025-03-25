@@ -2,9 +2,15 @@ import { useState } from "react";
 
 import { createFileRoute } from "@tanstack/react-router";
 
+import CircleBlock from "#/components/CircleBlock";
 import ImageBlock from "#/components/ImageBlock";
 import TextBlock from "#/components/TextBlock";
-import { BASE_IMG_HEIGHT, BASE_IMG_WIDTH, POSITIONS } from "#/libs/constant";
+import {
+  BASE_IMG_HEIGHT,
+  BASE_IMG_WIDTH,
+  INTERESETS,
+  POSITIONS,
+} from "#/libs/constant";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -16,6 +22,7 @@ function Index() {
   const [grade, setGrade] = useState<string>("21st");
   const [course, setCourse] = useState<string>("Computer Science");
   const [bio, setBio] = useState<string>("");
+  const [interests, setInterests] = useState<string[]>([]);
 
   const downloadImage = () => {
     const canvas = document.createElement("canvas");
@@ -51,6 +58,14 @@ function Index() {
         // bio
         // TODO: 折り返し
         ctx.fillText(bio, POSITIONS.bio.top, POSITIONS.bio.left);
+
+        // interests
+        interests.forEach((interest) => {
+          const item = INTERESETS.find((item) => item.id === interest);
+          if (item) {
+            ctx.arc(item.top, item.left, 1000, 0, Math.PI * 2, true);
+          }
+        });
 
         canvas.toBlob((blob) => {
           if (blob) {
@@ -90,21 +105,29 @@ function Index() {
           <TextBlock {...POSITIONS.grade} text={grade} />
           <TextBlock {...POSITIONS.course} text={course} />
           <TextBlock {...POSITIONS.bio} text={bio} />
+          {interests.map((interest) => {
+            const item = INTERESETS.find((item) => item.id === interest);
+            if (item) {
+              return (
+                <CircleBlock key={item.id} top={item.top} left={item.left} />
+              );
+            }
+          })}
         </div>
         <button onClick={downloadImage}>ダウンロードする</button>
       </div>
       <div className="form">
-        <div className="form-control">
-          <label htmlFor="profile">アイコン画像</label>
+        <fieldset>
+          <legend>アイコン画像</legend>
           <input
             id="profile"
             type="file"
             accept="image/*"
             onChange={handleImageChange}
           />
-        </div>
-        <div className="form-control">
-          <label htmlFor="name">ハンドルネーム</label>
+        </fieldset>
+        <fieldset>
+          <legend>ハンドルネーム</legend>
           <input
             id="name"
             type="text"
@@ -112,9 +135,9 @@ function Index() {
             onChange={(event) => setName(event.target.value)}
             placeholder="Your name"
           />
-        </div>
-        <div className="form-control">
-          <label htmlFor="grade">学年</label>
+        </fieldset>
+        <fieldset>
+          <legend>学年</legend>
           <input
             id="grade"
             type="text"
@@ -122,9 +145,9 @@ function Index() {
             onChange={(event) => setGrade(event.target.value)}
             placeholder="Your grade"
           />
-        </div>
-        <div className="form-control">
-          <label htmlFor="course">学科</label>
+        </fieldset>
+        <fieldset>
+          <legend>学科</legend>
           <input
             id="course"
             type="text"
@@ -132,16 +155,38 @@ function Index() {
             onChange={(event) => setCourse(event.target.value)}
             placeholder="Your course"
           />
-        </div>
-        <div className="form-control">
-          <label htmlFor="bio">自己紹介</label>
+        </fieldset>
+        <fieldset>
+          <legend>自己紹介</legend>
           <textarea
             id="bio"
             value={bio}
             onChange={(event) => setBio(event.target.value)}
             placeholder="Your bio"
           />
-        </div>
+        </fieldset>
+        <fieldset>
+          <legend>興味のあること</legend>
+          {INTERESETS.map((item) => (
+            <div key={item.id}>
+              <input
+                id={item.id}
+                name="interests"
+                type="checkbox"
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setInterests([...interests, item.id]);
+                  } else {
+                    setInterests(
+                      interests.filter((interest) => interest !== item.id)
+                    );
+                  }
+                }}
+              />
+              <label htmlFor={item.id}>{item.label}</label>
+            </div>
+          ))}
+        </fieldset>
       </div>
     </div>
   );
