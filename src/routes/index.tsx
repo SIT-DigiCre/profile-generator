@@ -2,41 +2,13 @@ import { useState } from "react";
 
 import { createFileRoute } from "@tanstack/react-router";
 
+import ImageBlock from "#/components/ImageBlock";
+import TextBlock from "#/components/TextBlock";
+import { BASE_IMG_HEIGHT, BASE_IMG_WIDTH, POSITIONS } from "#/libs/constant";
+
 export const Route = createFileRoute("/")({
   component: Index,
 });
-
-const ASPECT = 0.1;
-const BASE_IMG_WIDTH = 8000;
-const BASE_IMG_HEIGHT = 4500;
-const POSITIONS = {
-  name: {
-    top: 1000,
-    left: 1700,
-    fontSize: 300,
-  },
-  profile: {
-    top: 185,
-    left: 185,
-    width: 1400,
-    height: 1400,
-  },
-  grade: {
-    top: 200,
-    left: 1700,
-    fontSize: 200,
-  },
-  course: {
-    top: 1900,
-    left: 300,
-    fontSize: 200,
-  },
-  bio: {
-    top: 1100,
-    left: 4100,
-    fontSize: 200,
-  },
-} as const;
 
 function Index() {
   const [name, setName] = useState<string>("");
@@ -136,64 +108,11 @@ function Index() {
           src="/base.png"
           alt="Selected"
         />
-        {profile && (
-          <img
-            width={POSITIONS.profile.width * ASPECT}
-            height={POSITIONS.profile.height * ASPECT}
-            src={profile}
-            alt="Selected"
-            style={{
-              position: "absolute",
-              top: POSITIONS.profile.top * ASPECT,
-              left: POSITIONS.profile.left * ASPECT,
-              borderRadius: "9999px",
-            }}
-          />
-        )}
-        <div
-          style={{
-            position: "absolute",
-            top: POSITIONS.name.top * ASPECT,
-            left: POSITIONS.name.left * ASPECT,
-            color: "black",
-            fontSize: POSITIONS.name.fontSize * ASPECT,
-          }}
-        >
-          {name}
-        </div>
-        <div
-          style={{
-            position: "absolute",
-            top: POSITIONS.grade.top * ASPECT,
-            left: POSITIONS.grade.left * ASPECT,
-            color: "black",
-            fontSize: POSITIONS.grade.fontSize * ASPECT,
-          }}
-        >
-          {grade}
-        </div>
-        <div
-          style={{
-            position: "absolute",
-            top: POSITIONS.course.top * ASPECT,
-            left: POSITIONS.course.left * ASPECT,
-            color: "black",
-            fontSize: POSITIONS.course.fontSize * ASPECT,
-          }}
-        >
-          {course}
-        </div>
-        <div
-          style={{
-            position: "absolute",
-            top: POSITIONS.bio.top * ASPECT,
-            left: POSITIONS.bio.left * ASPECT,
-            color: "black",
-            fontSize: POSITIONS.bio.fontSize * ASPECT,
-          }}
-        >
-          {bio}
-        </div>
+        {profile && <ImageBlock {...POSITIONS.profile} src={profile} />}
+        <TextBlock {...POSITIONS.name} text={name} />
+        <TextBlock {...POSITIONS.grade} text={grade} />
+        <TextBlock {...POSITIONS.course} text={course} />
+        <TextBlock {...POSITIONS.bio} text={bio} />
         <button onClick={downloadImage}>Download as WebP</button>
       </div>
     </div>
