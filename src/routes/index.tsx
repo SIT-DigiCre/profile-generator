@@ -1,7 +1,16 @@
 import { useState } from "react";
 
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { Button, FormControl, FormLabel } from "@mui/material";
+import {
+  Button,
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Input,
+  Stack,
+} from "@mui/material";
 import { createFileRoute } from "@tanstack/react-router";
 
 import CheckBlock from "#/components/CheckBlock";
@@ -35,7 +44,7 @@ function Index() {
   const [vcRate, setVcRate] = useState<number>(7);
   const [speak, setSpeak] = useState<boolean>(true);
   const [chat, setChat] = useState<boolean>(true);
-  const [interests, setInterests] = useState<string[]>(["pg", "dtm"]);
+  const [interests, setInterests] = useState<string[]>([]);
 
   const downloadImage = () => {
     const canvas = document.createElement("canvas");
@@ -175,8 +184,29 @@ function Index() {
 
   return (
     <>
-      <div className="wrapper">
-        <div className="preview">
+      <Stack
+        padding={2}
+        alignItems="center"
+        direction="row"
+        justifyContent="space-between"
+        bgcolor={"#eeeeee"}
+      >
+        <h1>デジクリ部員図鑑ジェネレータ</h1>
+        <Button
+          variant="contained"
+          onClick={downloadImage}
+          startIcon={<ArrowDownwardIcon />}
+        >
+          ダウンロードする
+        </Button>
+      </Stack>
+      <Stack
+        direction={["column", "column", "row"]}
+        gap={2}
+        padding={2}
+        justifyContent={["center", "space-between"]}
+      >
+        <Stack flexGrow={1} justifyContent="center" alignItems="center">
           <div style={{ position: "relative", display: "inline-block" }}>
             <img
               width={BASE_IMG_WIDTH * 0.1}
@@ -209,8 +239,12 @@ function Index() {
               }
             })}
           </div>
-        </div>
-        <div className="form">
+        </Stack>
+        <Stack
+          maxHeight={[undefined, undefined, "80vh"]}
+          gap={3}
+          overflow="auto"
+        >
           <FormControl>
             <FormLabel>プロフィール画像</FormLabel>
             <Button
@@ -229,99 +263,105 @@ function Index() {
               />
             </Button>
           </FormControl>
-          <fieldset>
-            <legend>ハンドルネーム</legend>
-            <input
+          <FormControl>
+            <FormLabel>ハンドルネーム</FormLabel>
+            <Input
               id="name"
               type="text"
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="Your name"
             />
-          </fieldset>
-          <fieldset>
-            <legend>学年</legend>
-            <input
+          </FormControl>
+          <FormControl>
+            <FormLabel>学年</FormLabel>
+            <Input
               id="grade"
               type="text"
               value={grade}
               onChange={(event) => setGrade(event.target.value)}
               placeholder="Your grade"
             />
-          </fieldset>
-          <fieldset>
-            <legend>学科</legend>
-            <input
+          </FormControl>
+          <FormControl>
+            <FormLabel>学科</FormLabel>
+            <Input
               id="course"
               type="text"
               value={course}
               onChange={(event) => setCourse(event.target.value)}
               placeholder="Your course"
             />
-          </fieldset>
-          <fieldset>
-            <legend>VS出現率</legend>
-            <input
+          </FormControl>
+          <FormControl>
+            <FormLabel>VC出現率</FormLabel>
+            <Input
+              id="vcRate"
               type="number"
-              min={0}
-              max={7}
-              onChange={(e) => setVcRate(e.target.value as unknown as number)}
+              value={vcRate}
+              onChange={(event) =>
+                setVcRate(event.target.value as unknown as number)
+              }
             />
-          </fieldset>
-          <fieldset>
-            <legend>自己紹介</legend>
-            <textarea
-              id="bio"
-              value={bio}
+          </FormControl>
+          <FormControl>
+            <FormLabel>自己紹介</FormLabel>
+            <Input
+              id="profile"
+              type="text"
+              value={profile}
               onChange={(event) => setBio(event.target.value)}
-              placeholder="Your bio"
+              placeholder="Your profile"
             />
-          </fieldset>
-          <fieldset>
-            <legend>おしゃべり</legend>
-            <input
-              type="checkbox"
-              onChange={(e) => setSpeak(e.target.checked)}
-            />
-          </fieldset>
-          <fieldset>
-            <legend>チャット</legend>
-            <input
-              type="checkbox"
-              onChange={(e) => setChat(e.target.checked)}
-            />
-          </fieldset>
-          <fieldset>
-            <legend>興味のあること</legend>
-            {INTERESETS.map((item) => (
-              <div key={item.id}>
-                <input
-                  id={item.id}
-                  name="interests"
-                  type="checkbox"
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setInterests([...interests, item.id]);
-                    } else {
-                      setInterests(
-                        interests.filter((interest) => interest !== item.id)
-                      );
-                    }
-                  }}
+          </FormControl>
+          <FormControl>
+            <FormLabel>おしゃべり</FormLabel>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  onChange={(event) => setSpeak(event.target.checked)}
                 />
-                <label htmlFor={item.id}>{item.label}</label>
-              </div>
-            ))}
-          </fieldset>
-        </div>
-      </div>
-      <Button
-        variant="contained"
-        onClick={downloadImage}
-        startIcon={<CloudUploadIcon />}
-      >
-        ダウンロードする
-      </Button>
+              }
+              label="おしゃべり"
+            />
+          </FormControl>
+          <FormControl>
+            <FormLabel>チャット</FormLabel>
+            <FormControlLabel
+              control={
+                <Checkbox onChange={(event) => setChat(event.target.checked)} />
+              }
+              label="チャット"
+            />
+          </FormControl>
+          <FormControl>
+            <FormLabel>興味のあること</FormLabel>
+            <Stack direction="column">
+              {INTERESETS.map((item) => (
+                <FormControlLabel
+                  key={item.id}
+                  control={
+                    <Checkbox
+                      id={item.id}
+                      name="interests"
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setInterests([...interests, item.id]);
+                        } else {
+                          setInterests(
+                            interests.filter((interest) => interest !== item.id)
+                          );
+                        }
+                      }}
+                    />
+                  }
+                  label={item.label}
+                />
+              ))}
+            </Stack>
+          </FormControl>
+        </Stack>
+      </Stack>
     </>
   );
 }
