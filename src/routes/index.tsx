@@ -34,16 +34,14 @@ export const Route = createFileRoute("/")({
 const TOP_OFFSET = 200;
 
 function Index() {
-  const [name, setName] = useState<string>("newt");
+  const [name, setName] = useState<string>("");
   const [profile, setProfile] = useState<string>("");
-  const [grade, setGrade] = useState<string>("21st");
-  const [course, setCourse] = useState<string>("Computer Science");
-  const [bio, setBio] = useState<string>(
-    "Webが好きです。あああああああああああああああああ"
-  );
+  const [grade, setGrade] = useState<string>("");
+  const [course, setCourse] = useState<string>("");
+  const [bio, setBio] = useState<string>("");
   const [vcRate, setVcRate] = useState<number>(7);
-  const [speak, setSpeak] = useState<boolean>(true);
-  const [chat, setChat] = useState<boolean>(true);
+  const [speak, setSpeak] = useState<boolean>(false);
+  const [chat, setChat] = useState<boolean>(false);
   const [interests, setInterests] = useState<string[]>([]);
 
   const downloadImage = () => {
@@ -309,7 +307,7 @@ function Index() {
             <Input
               id="profile"
               type="text"
-              value={profile}
+              value={bio}
               onChange={(event) => setBio(event.target.value)}
               placeholder="Your profile"
             />
@@ -319,6 +317,7 @@ function Index() {
             <FormControlLabel
               control={
                 <Checkbox
+                  checked={speak}
                   onChange={(event) => setSpeak(event.target.checked)}
                 />
               }
@@ -329,7 +328,10 @@ function Index() {
             <FormLabel>チャット</FormLabel>
             <FormControlLabel
               control={
-                <Checkbox onChange={(event) => setChat(event.target.checked)} />
+                <Checkbox
+                  checked={chat}
+                  onChange={(event) => setChat(event.target.checked)}
+                />
               }
               label="チャット"
             />
