@@ -1,3 +1,5 @@
+import CheckIcon from "@mui/icons-material/Check";
+
 import { RATIO } from "#/libs/constant";
 
 type CircleBlockProps = {
@@ -5,20 +7,19 @@ type CircleBlockProps = {
   left: number;
 };
 
-const CircleBlock: React.FC<CircleBlockProps> = ({ top, left }) => {
+const CheckBlock: React.FC<CircleBlockProps> = ({ top, left }) => {
   return (
-    <div
+    <CheckIcon
+      color="error"
       style={{
         position: "absolute",
         top: top * RATIO,
         left: left * RATIO,
         width: 50,
         height: 50,
-        border: "10px double red",
-        borderRadius: "50%",
       }}
     />
   );
 };
 
-export default CircleBlock;
+export default CheckBlock;
