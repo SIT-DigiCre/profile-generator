@@ -78,6 +78,17 @@ function Index() {
       const objectURL = URL.createObjectURL(file);
       reader.readAsDataURL(file);
       fabric.FabricImage.fromURL(objectURL).then((img) => {
+        img.scaleToWidth(POSITIONS.profile.width);
+        img.scaleToHeight(POSITIONS.profile.height);
+        img.set({ top: POSITIONS.profile.top, left: POSITIONS.profile.left });
+        const circleMask = new fabric.Circle({
+          radius: 800,
+          left: 0,
+          top: 0,
+          originX: "center",
+          originY: "center",
+        });
+        img.clipPath = circleMask;
         canvas.add(img);
         canvas.requestRenderAll();
       });

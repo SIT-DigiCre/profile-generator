@@ -10,8 +10,8 @@ export const POSITIONS = {
     fill: "black",
   },
   profile: {
-    top: 185,
-    left: 185,
+    top: 18.5,
+    left: 18.5,
     width: 140,
     height: 140,
   },
