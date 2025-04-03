@@ -34,9 +34,9 @@ function Index() {
   const [grade, setGrade] = useState<fabric.FabricText | null>(null);
   const [course, setCourse] = useState<fabric.FabricText | null>(null);
   const [bio, setBio] = useState<fabric.Textbox | null>(null);
-  const [vcRate, setVcRate] = useState<number>(7);
-  const [speak, setSpeak] = useState<boolean>(false);
-  const [chat, setChat] = useState<boolean>(false);
+  const [vcRate, setVcRate] = useState<fabric.Rect[]>([]);
+  const [speak, setSpeak] = useState<fabric.Polyline | null>(null);
+  const [chat, setChat] = useState<fabric.Polyline | null>(null);
   const [interests, setInterests] = useState<string[]>([]);
 
   useEffect(() => {
@@ -208,10 +208,25 @@ function Index() {
               <Input
                 id="vcRate"
                 type="number"
-                value={vcRate}
-                onChange={(event) =>
-                  setVcRate(event.target.value as unknown as number)
-                }
+                value={vcRate.length}
+                onChange={(event) => {
+                  vcRate.forEach((item) => canvas.remove(item));
+                  const newVcRate: fabric.Rect[] = [];
+                  const x = event.currentTarget.value as unknown as number;
+                  for (let i = 0; i < x; i++) {
+                    const newItem = new fabric.Rect({
+                      top: 61,
+                      left: 460 + i * 29,
+                      fill: "red",
+                      width: 20,
+                      height: 20,
+                    });
+                    canvas.add(newItem);
+                    newVcRate.push(newItem);
+                  }
+                  setVcRate(newVcRate);
+                  canvas.requestRenderAll();
+                }}
               />
             </FormControl>
             <FormControl>
@@ -238,8 +253,26 @@ function Index() {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={speak}
-                    onChange={(event) => setSpeak(event.target.checked)}
+                    checked={!!speak}
+                    onChange={() => {
+                      if (speak) canvas.remove(speak);
+                      const checkMark = new fabric.Polyline(
+                        [
+                          { x: 685, y: 75 },
+                          { x: 695, y: 85 },
+                          { x: 710, y: 60 },
+                        ],
+                        {
+                          fill: "transparent",
+                          stroke: "red",
+                          strokeWidth: 5,
+                          strokeLineCap: "round",
+                          strokeLineJoin: "round",
+                        }
+                      );
+                      setSpeak(checkMark);
+                      canvas.add(checkMark);
+                    }}
                   />
                 }
                 label="おしゃべり"
@@ -250,8 +283,26 @@ function Index() {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={chat}
-                    onChange={(event) => setChat(event.target.checked)}
+                    checked={!!chat}
+                    onChange={() => {
+                      if (chat) canvas.remove(chat);
+                      const checkMark = new fabric.Polyline(
+                        [
+                          { x: 740, y: 75 },
+                          { x: 750, y: 85 },
+                          { x: 765, y: 60 },
+                        ],
+                        {
+                          fill: "transparent",
+                          stroke: "red",
+                          strokeWidth: 5,
+                          strokeLineCap: "round",
+                          strokeLineJoin: "round",
+                        }
+                      );
+                      setChat(checkMark);
+                      canvas.add(checkMark);
+                    }}
                   />
                 }
                 label="チャット"
