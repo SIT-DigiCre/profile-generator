@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -12,171 +12,75 @@ import {
   Stack,
 } from "@mui/material";
 import { createFileRoute } from "@tanstack/react-router";
+import * as fabric from "fabric";
 
-import CheckBlock from "#/components/CheckBlock";
-import CircleBlock from "#/components/CircleBlock";
-import FillSquareBlock from "#/components/FillSquareBlock";
-import ImageBlock from "#/components/ImageBlock";
-import TextBlock from "#/components/TextBlock";
 import { VisuallyHiddenInput } from "#/components/VisuallyHiddenInput";
 import {
   BASE_IMG_HEIGHT,
   BASE_IMG_WIDTH,
   INTERESETS,
   POSITIONS,
+  RATIO,
 } from "#/libs/constant";
-import { wrapText } from "#/libs/functions";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const TOP_OFFSET = 200;
-
 function Index() {
-  const [name, setName] = useState<string>("");
-  const [profile, setProfile] = useState<string>("");
-  const [grade, setGrade] = useState<string>("");
-  const [course, setCourse] = useState<string>("");
-  const [bio, setBio] = useState<string>("");
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
+  const [name, setName] = useState<fabric.FabricText | null>(null);
+  const [grade, setGrade] = useState<fabric.FabricText | null>(null);
+  const [course, setCourse] = useState<fabric.FabricText | null>(null);
+  const [bio, setBio] = useState<fabric.Textbox | null>(null);
   const [vcRate, setVcRate] = useState<number>(7);
   const [speak, setSpeak] = useState<boolean>(false);
   const [chat, setChat] = useState<boolean>(false);
   const [interests, setInterests] = useState<string[]>([]);
 
-  const downloadImage = () => {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-    img.src = "/base.png";
-
-    img.onload = async () => {
-      await document.fonts.ready;
-      canvas.width = img.width;
-      canvas.height = img.height;
-      if (ctx) {
-        // 背景の描画
-        ctx.drawImage(img, 0, 0);
-        ctx.fillStyle = "black";
-        // 名前
-        ctx.font = `${POSITIONS.name.fontSize}px Noto Sans JP`;
-        ctx.fillText(
-          name,
-          POSITIONS.name.left,
-          POSITIONS.name.top + TOP_OFFSET
-        );
-        // 学年
-        ctx.font = `${POSITIONS.grade.fontSize}px Noto Sans JP`;
-        ctx.fillText(
-          grade,
-          POSITIONS.grade.left,
-          POSITIONS.grade.top + TOP_OFFSET
-        );
-        // 学科
-        ctx.font = `${POSITIONS.course.fontSize}px Noto Sans JP`;
-        ctx.fillText(
-          course,
-          POSITIONS.course.left,
-          POSITIONS.course.top + TOP_OFFSET
-        );
-        // 自己紹介
-        // TODO: 折り返し
-        wrapText(
-          ctx,
-          bio,
-          POSITIONS.bio.left,
-          POSITIONS.bio.top + TOP_OFFSET,
-          3000,
-          POSITIONS.bio.fontSize
-        );
-
-        // 興味
-        interests.forEach((interest) => {
-          const item = INTERESETS.find((item) => item.id === interest);
-          if (item) {
-            ctx.strokeStyle = "red";
-            ctx.lineWidth = 100;
-            ctx.beginPath();
-            ctx.arc(item.left + 250, item.top + 250, 250, 0, Math.PI * 2);
-            ctx.stroke();
-          }
-        });
-
-        // VS出現率
-        ctx.fillStyle = "red";
-        [...Array(vcRate)].map((_, index) =>
-          ctx.fillRect(
-            POSITIONS.vcRate.left + 285 * index,
-            POSITIONS.vcRate.top,
-            250,
-            250
-          )
-        );
-        // おしゃべり
-        if (speak) {
-          ctx.fillStyle = "red";
-          ctx.fillRect(
-            POSITIONS.speak.left + 180,
-            POSITIONS.speak.top + TOP_OFFSET,
-            150,
-            150
-          );
-        }
-        // チャット
-        if (chat) {
-          ctx.fillStyle = "red";
-          ctx.fillRect(
-            POSITIONS.chat.left + 180,
-            POSITIONS.chat.top + TOP_OFFSET,
-            150,
-            150
-          );
-        }
-
-        // アイコン
-        const profileEl = new Image();
-        profileEl.crossOrigin = "anonymous";
-        profileEl.src = profile;
-        profileEl.onload = () => {
-          ctx.beginPath();
-          ctx.arc(
-            POSITIONS.profile.left + 700,
-            POSITIONS.profile.top + 700,
-            700,
-            0,
-            Math.PI * 2
-          );
-          ctx.clip();
-          ctx.drawImage(
-            profileEl,
-            POSITIONS.profile.left,
-            POSITIONS.profile.top,
-            POSITIONS.profile.width,
-            POSITIONS.profile.height
-          );
-          ctx.restore();
-
-          canvas.toBlob((blob) => {
-            if (blob) {
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "profile.webp";
-              a.click();
-              URL.revokeObjectURL(url);
-            }
-          }, "image/webp");
-        };
-      }
+  useEffect(() => {
+    const newCanvas = new fabric.Canvas(canvasRef.current!, {
+      width: BASE_IMG_WIDTH,
+      height: BASE_IMG_HEIGHT,
+      backgroundColor: "#fff",
+      selection: false,
+    });
+    fabric.FabricImage.fromURL("/base.png").then((img) => {
+      img.scale(RATIO);
+      newCanvas.backgroundImage = img;
+      newCanvas.requestRenderAll();
+    });
+    setCanvas(newCanvas);
+    return () => {
+      newCanvas.dispose();
     };
+  }, []);
+
+  const downloadImage = () => {
+    if (canvas) {
+      const imageSrc = canvas.toDataURL({
+        multiplier: 1,
+        format: "webp",
+      });
+      const a = document.createElement("a");
+      a.href = imageSrc;
+      a.download = "profile.webp";
+      a.click();
+      URL.revokeObjectURL(imageSrc);
+    }
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
+    if (file && canvas) {
       const reader = new FileReader();
-      setProfile(URL.createObjectURL(file));
+      const objectURL = URL.createObjectURL(file);
       reader.readAsDataURL(file);
+      fabric.FabricImage.fromURL(objectURL).then((img) => {
+        canvas.add(img);
+        canvas.requestRenderAll();
+      });
     }
   };
 
@@ -205,164 +109,173 @@ function Index() {
         justifyContent={["center", "space-between"]}
       >
         <Stack flexGrow={1} justifyContent="center" alignItems="center">
-          <div style={{ position: "relative", display: "inline-block" }}>
-            <img
-              width={BASE_IMG_WIDTH * 0.1}
-              height={BASE_IMG_HEIGHT * 0.1}
-              src="/base.png"
-              alt="Selected"
-            />
-            {profile && (
-              <ImageBlock {...POSITIONS.profile} src={profile} rounded />
-            )}
-            <TextBlock {...POSITIONS.name} text={name} />
-            <TextBlock {...POSITIONS.grade} text={grade} />
-            <TextBlock {...POSITIONS.course} text={course} />
-            {[...Array(vcRate)].map((_, index) => (
-              <FillSquareBlock
-                key={index}
-                top={POSITIONS.vcRate.top}
-                left={POSITIONS.vcRate.left + 285 * index}
-              />
-            ))}
-            {speak && <CheckBlock {...POSITIONS.speak} />}
-            {chat && <CheckBlock {...POSITIONS.chat} />}
-            <TextBlock {...POSITIONS.bio} text={bio} />
-            {interests.map((interest) => {
-              const item = INTERESETS.find((item) => item.id === interest);
-              if (item) {
-                return (
-                  <CircleBlock key={item.id} top={item.top} left={item.left} />
-                );
-              }
-            })}
-          </div>
+          <canvas ref={canvasRef} />
         </Stack>
-        <Stack
-          maxHeight={[undefined, undefined, "80vh"]}
-          gap={3}
-          overflow="auto"
-        >
-          <FormControl>
-            <FormLabel>プロフィール画像</FormLabel>
-            <Button
-              component="label"
-              role={undefined}
-              variant="contained"
-              tabIndex={-1}
-              startIcon={<CloudUploadIcon />}
-            >
-              画像を読み込む
-              <VisuallyHiddenInput
-                type="file"
-                onChange={handleImageChange}
-                accept="image/*"
-                multiple
+        {canvas && (
+          <Stack
+            maxHeight={[undefined, undefined, "80vh"]}
+            gap={3}
+            overflow="auto"
+          >
+            <FormControl>
+              <FormLabel>プロフィール画像</FormLabel>
+              <Button
+                component="label"
+                role={undefined}
+                variant="contained"
+                tabIndex={-1}
+                startIcon={<CloudUploadIcon />}
+              >
+                画像を読み込む
+                <VisuallyHiddenInput
+                  type="file"
+                  onChange={handleImageChange}
+                  accept="image/*"
+                  multiple
+                />
+              </Button>
+            </FormControl>
+            <FormControl>
+              <FormLabel>ハンドルネーム</FormLabel>
+              <Input
+                id="name"
+                type="text"
+                value={name?.text}
+                onChange={(event) => {
+                  if (name) canvas.remove(name);
+                  const newName = new fabric.FabricText(
+                    event.target.value,
+                    POSITIONS.name
+                  );
+                  setName(newName);
+                  canvas.add(newName);
+                  canvas.requestRenderAll();
+                }}
+                placeholder="Your name"
               />
-            </Button>
-          </FormControl>
-          <FormControl>
-            <FormLabel>ハンドルネーム</FormLabel>
-            <Input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Your name"
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>学年</FormLabel>
-            <Input
-              id="grade"
-              type="text"
-              value={grade}
-              onChange={(event) => setGrade(event.target.value)}
-              placeholder="Your grade"
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>学科</FormLabel>
-            <Input
-              id="course"
-              type="text"
-              value={course}
-              onChange={(event) => setCourse(event.target.value)}
-              placeholder="Your course"
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>VC出現率</FormLabel>
-            <Input
-              id="vcRate"
-              type="number"
-              value={vcRate}
-              onChange={(event) =>
-                setVcRate(event.target.value as unknown as number)
-              }
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>自己紹介</FormLabel>
-            <Input
-              id="profile"
-              type="text"
-              value={bio}
-              onChange={(event) => setBio(event.target.value)}
-              placeholder="Your profile"
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>おしゃべり</FormLabel>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={speak}
-                  onChange={(event) => setSpeak(event.target.checked)}
-                />
-              }
-              label="おしゃべり"
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>チャット</FormLabel>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={chat}
-                  onChange={(event) => setChat(event.target.checked)}
-                />
-              }
-              label="チャット"
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>興味のあること</FormLabel>
-            <Stack direction="column">
-              {INTERESETS.map((item) => (
-                <FormControlLabel
-                  key={item.id}
-                  control={
-                    <Checkbox
-                      id={item.id}
-                      name="interests"
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setInterests([...interests, item.id]);
-                        } else {
-                          setInterests(
-                            interests.filter((interest) => interest !== item.id)
-                          );
-                        }
-                      }}
-                    />
-                  }
-                  label={item.label}
-                />
-              ))}
-            </Stack>
-          </FormControl>
-        </Stack>
+            </FormControl>
+            <FormControl>
+              <FormLabel>学年</FormLabel>
+              <Input
+                id="grade"
+                type="text"
+                value={grade?.text}
+                onChange={(event) => {
+                  if (grade) canvas.remove(grade);
+                  const newGrade = new fabric.FabricText(
+                    event.target.value,
+                    POSITIONS.grade
+                  );
+                  setGrade(newGrade);
+                  canvas.add(newGrade);
+                  canvas.requestRenderAll();
+                }}
+                placeholder="Your grade"
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>学科</FormLabel>
+              <Input
+                id="course"
+                type="text"
+                value={course?.text}
+                onChange={(event) => {
+                  if (course) canvas.remove(course);
+                  const newCourse = new fabric.FabricText(
+                    event.target.value,
+                    POSITIONS.course
+                  );
+                  setCourse(newCourse);
+                  canvas.add(newCourse);
+                  canvas.requestRenderAll();
+                }}
+                placeholder="Your course"
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>VC出現率</FormLabel>
+              <Input
+                id="vcRate"
+                type="number"
+                value={vcRate}
+                onChange={(event) =>
+                  setVcRate(event.target.value as unknown as number)
+                }
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>自己紹介</FormLabel>
+              <Input
+                id="profile"
+                type="text"
+                value={bio?.text}
+                onChange={(event) => {
+                  if (bio) canvas.remove(bio);
+                  const newBio = new fabric.Textbox(
+                    event.target.value,
+                    POSITIONS.bio
+                  );
+                  setBio(newBio);
+                  canvas.add(newBio);
+                  canvas.requestRenderAll();
+                }}
+                placeholder="Your profile"
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>おしゃべり</FormLabel>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={speak}
+                    onChange={(event) => setSpeak(event.target.checked)}
+                  />
+                }
+                label="おしゃべり"
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>チャット</FormLabel>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={chat}
+                    onChange={(event) => setChat(event.target.checked)}
+                  />
+                }
+                label="チャット"
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>興味のあること</FormLabel>
+              <Stack direction="column">
+                {INTERESETS.map((item) => (
+                  <FormControlLabel
+                    key={item.id}
+                    control={
+                      <Checkbox
+                        id={item.id}
+                        name="interests"
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setInterests([...interests, item.id]);
+                          } else {
+                            setInterests(
+                              interests.filter(
+                                (interest) => interest !== item.id
+                              )
+                            );
+                          }
+                        }}
+                      />
+                    }
+                    label={item.label}
+                  />
+                ))}
+              </Stack>
+            </FormControl>
+          </Stack>
+        )}
       </Stack>
     </>
   );
