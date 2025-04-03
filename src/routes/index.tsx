@@ -7,6 +7,7 @@ import {
   Checkbox,
   FormControl,
   FormControlLabel,
+  FormHelperText,
   FormLabel,
   Input,
   Stack,
@@ -38,6 +39,9 @@ function Index() {
   const [speak, setSpeak] = useState<fabric.Polyline | null>(null);
   const [chat, setChat] = useState<fabric.Polyline | null>(null);
   const [interests, setInterests] = useState<string[]>([]);
+  const [interestsCircles, setInterestsCircles] = useState<{
+    [key: string]: fabric.Group;
+  }>({});
 
   useEffect(() => {
     const newCanvas = new fabric.Canvas(canvasRef.current!, {
@@ -95,6 +99,54 @@ function Index() {
     }
   };
 
+  // 興味のあることを変更したときの処理
+  const handleInterestChange = (id: string, checked: boolean) => {
+    if (!canvas) return;
+
+    if (checked) {
+      // すでに追加済みなら処理しない
+      const position = INTERESETS.find((item) => item.id === id);
+      if (interestsCircles[id] || !position) return;
+
+      console.log(position);
+
+      // 二重丸を作成
+      const outerCircle = new fabric.Circle({
+        radius: 20,
+        fill: "transparent",
+        stroke: "red",
+        strokeWidth: 4,
+        left: position.left,
+        top: position.top,
+      });
+
+      const innerCircle = new fabric.Circle({
+        radius: 10,
+        fill: "transparent",
+        stroke: "red",
+        strokeWidth: 4,
+        left: position.left + 10,
+        top: position.top + 10,
+      });
+
+      // グループ化して追加
+      const group = new fabric.Group([outerCircle, innerCircle]);
+      setInterestsCircles((prev) => ({ ...prev, [id]: group }));
+      canvas.add(group);
+    } else {
+      // 削除処理
+      if (interestsCircles[id]) {
+        canvas.remove(interestsCircles[id]);
+        setInterestsCircles((prev) => {
+          const newState = { ...prev };
+          delete newState[id];
+          return newState;
+        });
+      }
+    }
+
+    canvas.requestRenderAll();
+  };
   return (
     <>
       <Stack
@@ -241,12 +293,16 @@ function Index() {
                     event.target.value,
                     POSITIONS.bio
                   );
+                  console.log(newBio);
                   setBio(newBio);
                   canvas.add(newBio);
                   canvas.requestRenderAll();
                 }}
                 placeholder="Your profile"
               />
+              <FormHelperText>
+                改行したい位置で半角スペースを入れてください
+              </FormHelperText>
             </FormControl>
             <FormControl>
               <FormLabel>おしゃべり</FormLabel>
@@ -255,23 +311,27 @@ function Index() {
                   <Checkbox
                     checked={!!speak}
                     onChange={() => {
-                      if (speak) canvas.remove(speak);
-                      const checkMark = new fabric.Polyline(
-                        [
-                          { x: 685, y: 75 },
-                          { x: 695, y: 85 },
-                          { x: 710, y: 60 },
-                        ],
-                        {
-                          fill: "transparent",
-                          stroke: "red",
-                          strokeWidth: 5,
-                          strokeLineCap: "round",
-                          strokeLineJoin: "round",
-                        }
-                      );
-                      setSpeak(checkMark);
-                      canvas.add(checkMark);
+                      if (speak) {
+                        canvas.remove(speak);
+                        setSpeak(null);
+                      } else {
+                        const checkMark = new fabric.Polyline(
+                          [
+                            { x: 685, y: 75 },
+                            { x: 695, y: 85 },
+                            { x: 710, y: 60 },
+                          ],
+                          {
+                            fill: "transparent",
+                            stroke: "red",
+                            strokeWidth: 5,
+                            strokeLineCap: "round",
+                            strokeLineJoin: "round",
+                          }
+                        );
+                        setSpeak(checkMark);
+                        canvas.add(checkMark);
+                      }
                     }}
                   />
                 }
@@ -285,23 +345,27 @@ function Index() {
                   <Checkbox
                     checked={!!chat}
                     onChange={() => {
-                      if (chat) canvas.remove(chat);
-                      const checkMark = new fabric.Polyline(
-                        [
-                          { x: 740, y: 75 },
-                          { x: 750, y: 85 },
-                          { x: 765, y: 60 },
-                        ],
-                        {
-                          fill: "transparent",
-                          stroke: "red",
-                          strokeWidth: 5,
-                          strokeLineCap: "round",
-                          strokeLineJoin: "round",
-                        }
-                      );
-                      setChat(checkMark);
-                      canvas.add(checkMark);
+                      if (chat) {
+                        canvas.remove(chat);
+                        setChat(null);
+                      } else {
+                        const checkMark = new fabric.Polyline(
+                          [
+                            { x: 740, y: 75 },
+                            { x: 750, y: 85 },
+                            { x: 765, y: 60 },
+                          ],
+                          {
+                            fill: "transparent",
+                            stroke: "red",
+                            strokeWidth: 5,
+                            strokeLineCap: "round",
+                            strokeLineJoin: "round",
+                          }
+                        );
+                        setChat(checkMark);
+                        canvas.add(checkMark);
+                      }
                     }}
                   />
                 }
@@ -318,16 +382,15 @@ function Index() {
                       <Checkbox
                         id={item.id}
                         name="interests"
+                        checked={interests.includes(item.id)}
                         onChange={(e) => {
-                          if (e.target.checked) {
-                            setInterests([...interests, item.id]);
-                          } else {
-                            setInterests(
-                              interests.filter(
+                          const newInterests = e.target.checked
+                            ? [...interests, item.id]
+                            : interests.filter(
                                 (interest) => interest !== item.id
-                              )
-                            );
-                          }
+                              );
+                          setInterests(newInterests);
+                          handleInterestChange(item.id, e.target.checked);
                         }}
                       />
                     }

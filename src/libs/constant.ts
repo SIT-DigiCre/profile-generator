@@ -37,10 +37,12 @@ export const POSITIONS = {
     top: 110,
     left: 410,
     fontSize: 20,
-    width: 100,
-    aaa: 111,
+    width: 300,
     fontFamily: "Noto Sans JP",
     fill: "black",
+    breakWords: true,
+    opacity: 1,
+    textAlign: "left",
   },
   speak: {
     top: 55,
@@ -53,13 +55,13 @@ export const POSITIONS = {
 } as const;
 
 export const INTERESETS = [
-  { id: "pg", label: "プログラミング", top: 270, left: 250 },
-  { id: "dtm", label: "DTM", top: 270, left: 1050 },
-  { id: "3dcg", label: "3DCG", top: 270, left: 1850 },
-  { id: "illust", label: "イラスト", top: 270, left: 260 },
-  { id: "vtuber", label: "VTuber", top: 270, left: 330 },
-  { id: "sysdev", label: "システム開発", top: 3550, left: 250 },
-  { id: "dj", label: "DJ", top: 3550, left: 1050 },
-  { id: "movie", label: "映像制作", top: 3550, left: 1850 },
-  { id: "literature", label: "文字書き", top: 3550, left: 260 },
+  { id: "pg", label: "プログラミング", top: 270, left: 25 },
+  { id: "dtm", label: "DTM", top: 270, left: 105 },
+  { id: "3dcg", label: "3DCG", top: 270, left: 185 },
+  { id: "illust", label: "イラスト", top: 270, left: 265 },
+  { id: "vtuber", label: "VTuber", top: 270, left: 335 },
+  { id: "sysdev", label: "システム開発", top: 365, left: 25 },
+  { id: "dj", label: "DJ", top: 365, left: 105 },
+  { id: "movie", label: "映像制作", top: 365, left: 185 },
+  { id: "literature", label: "文字書き", top: 365, left: 265 },
 ] as const;
