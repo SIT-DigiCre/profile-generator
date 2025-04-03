@@ -83,8 +83,10 @@ function Index() {
       reader.readAsDataURL(file);
       fabric.FabricImage.fromURL(objectURL).then((img) => {
         img.scaleToWidth(POSITIONS.profile.width);
-        img.scaleToHeight(POSITIONS.profile.height);
-        img.set({ top: POSITIONS.profile.top, left: POSITIONS.profile.left });
+        img.set({
+          top: POSITIONS.profile.top,
+          left: POSITIONS.profile.left,
+        });
         const circleMask = new fabric.Circle({
           radius: 800,
           left: 0,
@@ -197,6 +199,7 @@ function Index() {
                   multiple
                 />
               </Button>
+              <FormHelperText>正方形の画像を用意してください</FormHelperText>
             </FormControl>
             <FormControl>
               <FormLabel>ハンドルネーム</FormLabel>
