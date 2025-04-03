@@ -64,7 +64,7 @@ function Index() {
   const downloadImage = () => {
     if (canvas) {
       const imageSrc = canvas.toDataURL({
-        multiplier: 1,
+        multiplier: 10,
         format: "webp",
       });
       const a = document.createElement("a");
