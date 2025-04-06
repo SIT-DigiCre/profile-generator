@@ -77,28 +77,43 @@ function Index() {
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && canvas) {
-      const reader = new FileReader();
-      const objectURL = URL.createObjectURL(file);
-      reader.readAsDataURL(file);
-      fabric.FabricImage.fromURL(objectURL).then((img) => {
-        img.scaleToWidth(POSITIONS.profile.width);
-        img.set({
-          top: POSITIONS.profile.top,
-          left: POSITIONS.profile.left,
-        });
-        const circleMask = new fabric.Circle({
-          radius: 800,
-          left: 0,
-          top: 0,
-          originX: "center",
-          originY: "center",
-        });
-        img.clipPath = circleMask;
-        canvas.add(img);
-        canvas.requestRenderAll();
+    if (!file || !canvas) return;
+
+    // 画像サイズ等を取得するため、FileReader ではなく一旦 Blob URL からロードする
+    const objectURL = URL.createObjectURL(file);
+
+    const diameter = 140; // 画面上での最終的な円の直径(px)
+
+    fabric.FabricImage.fromURL(objectURL).then((img) => {
+      const origW = img.width ?? 0;
+      const origH = img.height ?? 0;
+      // cover風に、短辺に合わせてスケーリング
+      const scaleRatio = diameter / Math.min(origW, origH);
+
+      // ▼ 画像を拡大・縮小
+      img.scale(scaleRatio);
+
+      // ▼ ここが重要：「ローカル座標系の円半径」
+      //    画面上では 70px に見せたいが、オブジェクトは scaleRatio 倍されているため
+      //    ローカル座標での半径は「70 / scaleRatio」にする
+      const circleMask = new fabric.Circle({
+        radius: diameter / 2 / scaleRatio, // = 70 / scaleRatio
+        originX: "center",
+        originY: "center",
       });
-    }
+
+      img.set({
+        originX: "center",
+        originY: "center",
+        clipPath: circleMask,
+        // 円の中心をキャンバス座標 (left + 70, top + 70) に持っていきたい
+        left: POSITIONS.profile.left + diameter / 2,
+        top: POSITIONS.profile.top + diameter / 2,
+      });
+
+      canvas.add(img);
+      canvas.requestRenderAll();
+    });
   };
 
   // 興味のあることを変更したときの処理
