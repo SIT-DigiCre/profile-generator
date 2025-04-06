@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import DeleteIcon from "@mui/icons-material/Delete";
+import DownloadIcon from "@mui/icons-material/Download";
+import UploadIcon from "@mui/icons-material/Upload";
 import {
   Button,
   Checkbox,
@@ -177,7 +178,7 @@ function Index() {
         <Button
           variant="contained"
           onClick={downloadImage}
-          startIcon={<ArrowDownwardIcon />}
+          startIcon={<DownloadIcon />}
         >
           ダウンロードする
         </Button>
@@ -188,8 +189,25 @@ function Index() {
         padding={2}
         justifyContent={["center", "space-between"]}
       >
-        <Stack flexGrow={1} justifyContent="center" alignItems="center">
+        <Stack flexGrow={1} gap={2} justifyContent="center" alignItems="center">
           <canvas ref={canvasRef} />
+          <Stack>
+            <Button
+              variant="contained"
+              onClick={() => {
+                if (canvas) {
+                  const selectedObject = canvas.getActiveObject();
+                  if (selectedObject) {
+                    canvas.remove(selectedObject);
+                    canvas.requestRenderAll();
+                  }
+                }
+              }}
+              startIcon={<DeleteIcon />}
+            >
+              選択中の要素を削除
+            </Button>
+          </Stack>
         </Stack>
         {canvas && (
           <Stack
@@ -204,7 +222,7 @@ function Index() {
                 role={undefined}
                 variant="contained"
                 tabIndex={-1}
-                startIcon={<CloudUploadIcon />}
+                startIcon={<UploadIcon />}
               >
                 画像を読み込む
                 <VisuallyHiddenInput
