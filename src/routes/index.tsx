@@ -303,9 +303,6 @@ function Index() {
                 }}
                 placeholder="Your profile"
               />
-              <FormHelperText>
-                改行したい位置で半角スペースを入れてください
-              </FormHelperText>
             </FormControl>
             <FormControl>
               <FormLabel>おしゃべり</FormLabel>
