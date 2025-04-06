@@ -43,6 +43,9 @@ function Index() {
   const [interestsCircles, setInterestsCircles] = useState<{
     [key: string]: fabric.Group;
   }>({});
+  const [selectedObject, setSelectedObject] = useState<
+    fabric.Object | undefined
+  >(undefined);
 
   useEffect(() => {
     const newCanvas = new fabric.Canvas(canvasRef.current!, {
@@ -61,6 +64,24 @@ function Index() {
       newCanvas.dispose();
     };
   }, []);
+
+  useEffect(() => {
+    if (!canvas) return;
+
+    const handleSelection = () => {
+      setSelectedObject(canvas.getActiveObject());
+    };
+
+    canvas.on("selection:created", handleSelection);
+    canvas.on("selection:updated", handleSelection);
+    canvas.on("selection:cleared", () => setSelectedObject(undefined));
+
+    return () => {
+      canvas.off("selection:created", handleSelection);
+      canvas.off("selection:updated", handleSelection);
+      canvas.off("selection:cleared", () => setSelectedObject(undefined));
+    };
+  }, [canvas]);
 
   const downloadImage = () => {
     if (canvas) {
@@ -195,15 +216,14 @@ function Index() {
             <Button
               variant="contained"
               onClick={() => {
-                if (canvas) {
-                  const selectedObject = canvas.getActiveObject();
-                  if (selectedObject) {
-                    canvas.remove(selectedObject);
-                    canvas.requestRenderAll();
-                  }
+                if (canvas && selectedObject) {
+                  canvas.remove(selectedObject);
+                  canvas.requestRenderAll();
+                  setSelectedObject(undefined);
                 }
               }}
               startIcon={<DeleteIcon />}
+              disabled={!selectedObject}
             >
               選択中の要素を削除
             </Button>
