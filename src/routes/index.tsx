@@ -11,6 +11,7 @@ import {
   FormHelperText,
   FormLabel,
   Input,
+  Slider,
   Stack,
 } from "@mui/material";
 import { createFileRoute } from "@tanstack/react-router";
@@ -313,15 +314,16 @@ function Index() {
             </FormControl>
             <FormControl>
               <FormLabel>VC出現率</FormLabel>
-              <Input
-                id="vcRate"
-                type="number"
+              <Slider
                 value={vcRate.length}
-                onChange={(event) => {
+                aria-label="VC出現率"
+                min={0}
+                max={7}
+                step={1}
+                onChange={(_event, value) => {
                   vcRate.forEach((item) => canvas.remove(item));
                   const newVcRate: fabric.Rect[] = [];
-                  const x = event.currentTarget.value as unknown as number;
-                  for (let i = 0; i < x; i++) {
+                  for (let i = 0; i < value; i++) {
                     const newItem = new fabric.Rect({
                       top: 61,
                       left: 460 + i * 29,
