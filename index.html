@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>部員図鑑ジェネレーター</title>
+    <title>デジクリ部員図鑑ジェネレーター</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
@@ -30,12 +30,12 @@
             box-sizing: border-box;
         }
         
-        /* 1920x1080の絶対サイズで固定し、PNGを背景にする */
+        /* 1920x1080の絶対サイズで固定 PNGを背景にする */
         .export-canvas {
             width: 1920px;
             height: 1080px;
             background-color: white;
-            background-image: url('アートボード 1.png'); /* ◀ PNGファイル名をここで指定 */
+            background-image: url('background.png');
             background-size: cover;
             background-position: center;
             position: relative;
@@ -74,9 +74,6 @@
         }
         .btn-export:hover { background-color: #0066cc; }
 
-        /* =========================================
-           ここから全て 1920x1080 に対する【絶対px座標】
-           ========================================= */
         .overlay {
             position: absolute;
             z-index: 2;
@@ -106,7 +103,6 @@
             transition: font-size 0.3s ease;
         }
 
-        /* %表記の共通スタイル (幅140px固定で中央揃え) */
         .percent-text-white {
             font-size: 46px; font-weight: 900; color: white;
             text-align: center; width: 140px;
@@ -117,7 +113,7 @@
             text-align: center; width: 140px;
         }
 
-        /* 出没度 (幅140pxの中央が円の中心に来るようにleftを逆算) */
+        /* 出没度 */
         #preview-discord { top: 154px; left: 1063px; }
         #preview-mattermost { top: 154px; left: 1504px; }
 
@@ -287,7 +283,7 @@ Markdownが利用できます！
             document.getElementById('preview-memo').innerHTML = marked.parse(rawText);
         }
 
-        // プレビュー領域の自動ズーム処理（チラつきません）
+        // プレビュー領域の自動ズーム処理
         function resizeCanvas() {
             const wrapper = document.getElementById('preview-wrapper');
             const canvas = document.getElementById('export-target');
@@ -310,18 +306,15 @@ Markdownが利用できます！
                 width: 1920,
                 height: 1080,
                 useCORS: true,
-                backgroundColor: '#ffffff', // null(透明)をやめて、念のため白背景で固定
+                backgroundColor: '#ffffff',
                 onclone: (clonedDoc) => {
                     const clonedTarget = clonedDoc.getElementById('export-target');
                     const wrapper = clonedDoc.getElementById('preview-wrapper');
 
-                    // 1. ズームを解除
                     clonedTarget.style.transform = 'none';
                     
-                    // 2. 悪さをする影（box-shadow）を書き出し時だけ消去
                     clonedTarget.style.boxShadow = 'none';
 
-                    // 3. Flexboxによる座標ズレ（左側が黒くなる原因）を強制リセット
                     if (wrapper) {
                         wrapper.style.display = 'block';
                         wrapper.style.padding = '0';
