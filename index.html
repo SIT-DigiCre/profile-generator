@@ -100,8 +100,8 @@
         
         #preview-icon { top: 111px; left: 96px; width: 192px; height: 192px; border-radius: 50%; object-fit: cover; background-color: transparent; }
         #preview-grade { top: 30px; left: 796px; font-size: 34px; font-weight: 900; color: white; letter-spacing: 2px; font-family: "M PLUS 1p", sans-serif; font-weight: 700; }
-        #preview-name { top: 172px; left: 345px; font-size: 72px; font-weight: 900; color: black; white-space: nowrap; font-family: "M PLUS 1p", sans-serif; font-weight: 800; }
-        #preview-dept { top: 486px; left: 144px; font-size: 36px; font-weight: bold; color: black; transition: font-size 0.3s ease; font-family: "M PLUS 1p", sans-serif; font-weight: 700; }
+        #preview-name { top: 172px; left: 345px; font-size: 72px; font-weight: 900; color: black; font-family: "M PLUS 1p", sans-serif; font-weight: 800; transition: font-size 0.3s ease; width: 587.5px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.2; }
+        #preview-dept { top: 486px; left: 144px; font-size: 36px; font-weight: bold; color: black; transition: font-size 0.3s ease; font-family: "M PLUS 1p", sans-serif; font-weight: 700; width: 745px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.2; }
         .percent-text-white { font-size: 46px; font-weight: 900; color: white; text-align: center; width: 140px; font-family: "M PLUS 1p", sans-serif; font-weight: 700; }
         .percent-text-digicre-skyblue { font-size: 77px; font-weight: 900; color: black; text-align: center; width: 140px; font-family: "M PLUS 1p", sans-serif; font-weight: 700; }
 
@@ -384,8 +384,24 @@
             document.getElementById(`preview-${id}`).innerText = document.getElementById(`input-${id}`).value;
             if (id === 'dept') {
                 adjustDeptFontSize();
+            } else if (id === 'name') {
+                adjustNameFontSize();
             }
             saveState();
+        }
+
+        function adjustNameFontSize() {
+            const nameElement = document.getElementById('preview-name');
+            const textLength = nameElement.innerText.length;
+            
+            let fontSize;
+            if (textLength <= 7) fontSize = '72px';
+            else if (textLength <= 8) fontSize = '64px';
+            else if (textLength <= 10) fontSize = '54px';
+            else if (textLength <= 11) fontSize = '50px';
+            else fontSize = '42px';
+            
+            nameElement.style.fontSize = fontSize;
         }
 
         function adjustDeptFontSize() {
@@ -480,6 +496,7 @@
                 loadState();
                 updateGrade();
                 updateMemo();
+                adjustNameFontSize();
                 adjustDeptFontSize();
                 resizeCanvas();
             });
@@ -488,6 +505,7 @@
             loadState();
             updateGrade();
             updateMemo();
+            adjustNameFontSize();
             adjustDeptFontSize();
             resizeCanvas();
         }
