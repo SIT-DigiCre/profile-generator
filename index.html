@@ -17,22 +17,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&family=M+PLUS+1:wght@100..900&family=M+PLUS+1p:wght@700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <script type="importmap">
-      {
-        "imports": {
-          "@material/web/": "https://esm.run/@material/web/"
-        }
-      }
-    </script>
-    <script type="module">
-      import '@material/web/textfield/outlined-text-field.js';
-      import '@material/web/slider/slider.js';
-      import '@material/web/divider/divider.js';
-    </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    
     <style>
         :root {
             --primary-blue: #00B0F0;
@@ -133,7 +117,7 @@
         #preview-sysdev { top: 770px; left: 679px; }
         #preview-design { top: 922px; left: 679px; }
 
-        #preview-memo { top: 410px; left: 1020px; width: 900px; height: 620px; font-size: 32px; line-height: 1.5; color: #333; overflow: hidden; word-wrap: break-word; }
+        #preview-memo { top: 410px; left: 1020px; width: 785px; height: 610px; font-size: 32px; line-height: 1.5; color: #333; overflow: hidden; word-wrap: break-word; }
         #preview-memo h1, #preview-memo h2, #preview-memo h3 { margin-top: 0; color: #00B0F0; margin-bottom: 5px; }
         #preview-memo p { margin-top: 0; margin-bottom: 8px; }
         #preview-memo ul { padding-left: 30px; margin-top: 0; margin-bottom: 8px;}
@@ -188,12 +172,28 @@
         <div id="sliders-container"></div>
 
         <md-divider style="margin-top: 8px; margin-bottom: 24px;"></md-divider>
-        <h2 style="margin-bottom: 20px;">MEMO (Markdown対応)</h2>
+        <h2 style="margin-bottom: 20px;">MEMO</h2>
         
         <md-outlined-text-field type="textarea" label="MEMO" id="input-memo" rows="6" oninput="updateMemo()" style="width: 100%; margin-bottom: 32px; resize: vertical;" value="## ここは自由記述欄です&#10;Markdownが利用できます！&#10;&#10;## たとえば&#10;「## 」を書くと見出しになります"></md-outlined-text-field>
 
         <button class="btn-simple btn-export" onclick="exportImage()">画像として保存</button>
     </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "@material/web/": "https://esm.run/@material/web/"
+        }
+      }
+    </script>
+    <script type="module">
+      import '@material/web/textfield/outlined-text-field.js';
+      import '@material/web/slider/slider.js';
+      import '@material/web/divider/divider.js';
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
     <script>
         const sliders = [
@@ -306,10 +306,18 @@
         });
         resizeObserver.observe(document.getElementById('preview-wrapper'));
 
-        // 初期化
-        updateMemo();
-        adjustDeptFontSize();
-        resizeCanvas();
+        // 初期化をDOMContentLoadedの後に実行
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                updateMemo();
+                adjustDeptFontSize();
+                resizeCanvas();
+            });
+        } else {
+            updateMemo();
+            adjustDeptFontSize();
+            resizeCanvas();
+        }
 
         function exportImage() {
             const target = document.getElementById('export-target');
