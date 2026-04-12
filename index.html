@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>デジクリ部員図鑑ジェネレーター</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&family=M+PLUS+1:wght@100..900&family=M+PLUS+1p:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
@@ -74,6 +77,18 @@
         }
         .btn-export:hover { background-color: #0066cc; }
 
+        .m-plus-1p-bold {
+            font-family: "M PLUS 1p", sans-serif;
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        .m-plus-1p-extrabold {
+            font-family: "M PLUS 1p", sans-serif;
+            font-weight: 800;
+            font-style: normal;
+        }
+
         .overlay {
             position: absolute;
             z-index: 2;
@@ -88,54 +103,64 @@
         }
         
         #preview-grade {
-            top: 35px; left: 796px;
+            top: 30px; left: 796px;
             font-size: 34px; font-weight: 900; color: white; letter-spacing: 2px;
+            font-family: "M PLUS 1p", sans-serif;
+            font-weight: 700;
         }
 
         #preview-name {
             top: 172px; left: 345px;
-            font-size: 72px; font-weight: 900; color: #00B0F0; white-space: nowrap;
+            font-size: 72px; font-weight: 900; color: black; white-space: nowrap;
+            font-family: "M PLUS 1p", sans-serif;
+            font-weight: 800;
         }
 
         #preview-dept {
             top: 486px; left: 144px;
-            font-size: 36px; font-weight: bold; color: #00B0F0;
+            font-size: 36px; font-weight: bold; color: black;
             transition: font-size 0.3s ease;
+            font-family: "M PLUS 1p", sans-serif;
+            font-weight: 700;
         }
 
         .percent-text-white {
             font-size: 46px; font-weight: 900; color: white;
             text-align: center; width: 140px;
+            font-family: "M PLUS 1p", sans-serif;
+            font-weight: 700;
         }
 
         .percent-text-digicre-skyblue {
-            font-size: 77px; font-weight: 900; color: #00B0F0;
+            font-size: 77px; font-weight: 900; color: black;
             text-align: center; width: 140px;
+            font-family: "M PLUS 1p", sans-serif;
+            font-weight: 700;
         }
 
         /* 出没度 */
-        #preview-discord { top: 154px; left: 1063px; }
-        #preview-mattermost { top: 154px; left: 1504px; }
+        #preview-discord { top: 145px; left: 1035px; }
+        #preview-mattermost { top: 145px; left: 1504px; }
 
         /* 興味ある度 */
         /* 1列目 */
-        #preview-pg { top: 628px; left: 122px; }
-        #preview-dtm { top: 779px; left: 122px; }
-        #preview-3dcg { top: 928px; left: 122px; }
+        #preview-pg { top: 620px; left: 122px; }
+        #preview-dtm { top: 770px; left: 122px; }
+        #preview-3dcg { top: 922px; left: 122px; }
         /* 2列目 */
-        #preview-illust { top: 628px; left: 400px; }
-        #preview-movie { top: 779px; left: 400px; }
-        #preview-word { top: 928px; left: 400px; }
+        #preview-illust { top: 620px; left: 400px; }
+        #preview-movie { top: 770px; left: 400px; }
+        #preview-word { top: 922px; left: 400px; }
         /* 3列目 */
-        #preview-vtuber { top: 628px; left: 679px; }
-        #preview-sysdev { top: 779px; left: 679px; }
-        #preview-design { top: 928px; left: 679px; }
+        #preview-vtuber { top: 620px; left: 679px; }
+        #preview-sysdev { top: 770px; left: 679px; }
+        #preview-design { top: 922px; left: 679px; }
 
         /* MEMOエリア */
         #preview-memo {
-            top: 430px; left: 1040px;
-            width: 800px; height: 550px;
-            font-size: 26px; line-height: 1.5; color: #333; overflow: hidden; word-wrap: break-word;
+            top: 410px; left: 1020px;
+            width: 900px; height: 620px;
+            font-size: 32px; line-height: 1.5; color: #333; overflow: hidden; word-wrap: break-word;
         }
         #preview-memo h1, #preview-memo h2, #preview-memo h3 { margin-top: 0; color: #00B0F0; margin-bottom: 5px; }
         #preview-memo p { margin-top: 0; margin-bottom: 8px; }
