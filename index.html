@@ -42,7 +42,6 @@
 
         .preview-wrapper {
             flex: 1;
-            /* Flexboxによる中央寄せを廃止し、相対配置の基準値にする */
             position: relative;
             overflow: hidden;
             box-sizing: border-box;
@@ -52,16 +51,14 @@
             width: 1920px;
             height: 1080px;
             background-color: white;
-            background-image: url('background.png'); /* ◀ ご自身の環境に合わせてファイル名を調整してください */
+            background-image: url('background.png');
             background-size: cover;
             background-position: center;
             
-            /* 【変更】Flexboxの影響を受けない絶対配置に */
             position: absolute;
-            transform-origin: 0 0; /* 左上を基準に縮小する */
+            transform-origin: 0 0;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
             
-            /* 【変更】計算が終わるまで非表示にしてチラつきを防ぐ */
             opacity: 0;
             transition: opacity 0.3s ease; 
         }
@@ -105,7 +102,6 @@
             font-size: 1.1rem;
         }
 
-        /* ----- ここから下は座標設定 (変更なし) ----- */
         .m-plus-1p-bold { font-family: "M PLUS 1p", sans-serif; font-weight: 700; font-style: normal; }
         .m-plus-1p-extrabold { font-family: "M PLUS 1p", sans-serif; font-weight: 800; font-style: normal; }
         .overlay { position: absolute; z-index: 2; }
@@ -266,24 +262,19 @@
             document.getElementById('preview-memo').innerHTML = marked.parse(rawText);
         }
 
-        // 【変更】座標を計算して絶対にど真ん中に配置するロジック
         function resizeCanvas() {
             const wrapper = document.getElementById('preview-wrapper');
             const canvas = document.getElementById('export-target');
             if (!wrapper || !canvas) return;
 
-            // 余白を両サイド20px(計40px)確保
             const availableWidth = wrapper.clientWidth - 40;
             const availableHeight = wrapper.clientHeight - 40;
 
-            // 1920x1080に対する縮小率を計算
             const scale = Math.min(availableWidth / 1920, availableHeight / 1080);
             
-            // 縮小された状態の幅と高さを計算
             const scaledWidth = 1920 * scale;
             const scaledHeight = 1080 * scale;
             
-            // 残った空間の半分を left, top に設定することで完全に中央寄せ
             const left = (wrapper.clientWidth - scaledWidth) / 2;
             const top = (wrapper.clientHeight - scaledHeight) / 2;
 
@@ -291,13 +282,11 @@
             canvas.style.left = `${left}px`;
             canvas.style.top = `${top}px`;
             
-            // 計算が終わったらフワッと表示する
             if (canvas.style.opacity !== '1') {
                 canvas.style.opacity = '1';
             }
         }
 
-        // 【変更】画面サイズの変動を直接監視（マテリアルUIの遅延描画にも対応）
         const resizeObserver = new ResizeObserver(() => {
             requestAnimationFrame(() => {
                 resizeCanvas();
