@@ -201,6 +201,87 @@
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
     <script>
+        // LocalStorage保存キー
+        const STORAGE_KEY = 'profileGeneratorState';
+
+        // 入力状況をLocalStorageに保存
+        function saveState() {
+            const state = {
+                grade: document.getElementById('input-grade').value,
+                name: document.getElementById('input-name').value,
+                dept: document.getElementById('input-dept').value,
+                memo: document.getElementById('input-memo').value,
+                icon: document.getElementById('preview-icon').src,
+                sliders: {}
+            };
+
+            // スライダーの値を保存
+            sliders.forEach(s => {
+                state.sliders[s.id] = document.getElementById(`input-${s.id}`).value;
+            });
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            console.log('State saved:', state);
+        }
+
+        // LocalStorageから入力状況を復元
+        function loadState() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) return false;
+
+            try {
+                const state = JSON.parse(saved);
+                
+                // グレード復元
+                if (state.grade) {
+                    document.getElementById('input-grade').value = state.grade;
+                    updateGrade();
+                }
+
+                // テキスト入力復元
+                if (state.name) {
+                    document.getElementById('input-name').value = state.name;
+                    updateText('name');
+                }
+
+                if (state.dept) {
+                    document.getElementById('input-dept').value = state.dept;
+                    updateText('dept');
+                }
+
+                // メモ復元
+                if (state.memo) {
+                    document.getElementById('input-memo').value = state.memo;
+                    updateMemo();
+                }
+
+                // アイコン復元
+                if (state.icon && state.icon !== 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=') {
+                    const img = document.getElementById('preview-icon');
+                    img.src = state.icon;
+                    img.style.backgroundColor = 'white';
+                    document.getElementById('file-name-display').innerText = '(復元済み)';
+                }
+
+                // スライダー復元
+                if (state.sliders) {
+                    sliders.forEach(s => {
+                        if (state.sliders[s.id] !== undefined) {
+                            const slider = document.getElementById(`input-${s.id}`);
+                            slider.value = state.sliders[s.id];
+                            updateSlider(s.id);
+                        }
+                    });
+                }
+
+                console.log('State loaded:', state);
+                return true;
+            } catch (err) {
+                console.error('Failed to load state:', err);
+                return false;
+            }
+        }
+
         // 序数サフィックス（st, nd, rd, th）を取得する関数
         function getOrdinalSuffix(num) {
             if (num >= 10 && num <= 20) {
@@ -242,6 +323,7 @@
                 const ordinal = formatOrdinal(parseInt(selectedValue));
                 document.getElementById('preview-grade').innerText = ordinal;
             }
+            saveState();
         }
 
         const sliders = [
@@ -258,18 +340,44 @@
             { id: 'design', label: 'デザイン 興味ある度' }
         ];
 
+        // 999%表示フラグを管理するオブジェクト
+        const sliderShow999 = {};
+
         const slidersContainer = document.getElementById('sliders-container');
         sliders.forEach(s => {
+            sliderShow999[s.id] = false;
             const div = document.createElement('div');
             div.style.marginBottom = '20px';
             div.innerHTML = `
                 <div style="display: flex; justify-content: space-between; margin-bottom: 4px; padding: 0 4px;">
                     <label style="font-size: 0.9rem; color: #444; font-weight: 500;">${s.label}</label>
-                    <span id="val-${s.id}" style="font-size: 0.9rem; font-weight: bold; color: var(--primary-blue);">50%</span>
+                    <span id="val-${s.id}" style="font-size: 0.9rem; font-weight: bold; color: var(--primary-blue); cursor: pointer; user-select: none;">50%</span>
                 </div>
                 <md-slider min="0" max="100" value="50" id="input-${s.id}" oninput="updateSlider('${s.id}')" style="width: 100%;"></md-slider>
             `;
             slidersContainer.appendChild(div);
+            
+            // ダブルクリックリスナーを追加
+            const span = div.querySelector(`#val-${s.id}`);
+            span.addEventListener('dblclick', () => {
+                const slider = document.getElementById(`input-${s.id}`);
+                
+                if (sliderShow999[s.id]) {
+                    // 999%モードをOFF：最大値を100に戻す
+                    sliderShow999[s.id] = false;
+                    slider.setAttribute('max', '100');
+                    slider.value = '100';
+                    span.innerText = '100%';
+                    document.getElementById(`preview-${s.id}`).innerText = '100';
+                } else {
+                    // 999%モードをON
+                    sliderShow999[s.id] = true;
+                    slider.setAttribute('max', '999');
+                    slider.value = '999';
+                    span.innerText = '999%';
+                    document.getElementById(`preview-${s.id}`).innerText = '999';
+                }
+            });
         });
 
         function updateText(id) {
@@ -277,6 +385,7 @@
             if (id === 'dept') {
                 adjustDeptFontSize();
             }
+            saveState();
         }
 
         function adjustDeptFontSize() {
@@ -293,10 +402,18 @@
         }
 
         function updateSlider(id) {
-            const val = document.getElementById(`input-${id}`).value;
+            const slider = document.getElementById(`input-${id}`);
+            const val = slider.value;
             const displayVal = val + '%';
+            
+            // 999%モード中でない場合のみ、最大値を100に戻す
+            if (!sliderShow999[id]) {
+                slider.setAttribute('max', '100');
+            }
+            
             document.getElementById(`val-${id}`).innerText = displayVal;
             document.getElementById(`preview-${id}`).innerText = val;
+            saveState();
         }
 
         function updateIcon(event) {
@@ -308,6 +425,7 @@
                     const img = document.getElementById('preview-icon');
                     img.src = e.target.result;
                     img.style.backgroundColor = 'white';
+                    saveState();
                 }
                 reader.readAsDataURL(file);
             }
@@ -320,6 +438,7 @@
             } else {
                 document.getElementById('preview-memo').innerHTML = '';
             }
+            saveState();
         }
 
         function resizeCanvas() {
@@ -358,14 +477,16 @@
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
                 initializeGradeSelect();
-                updateGrade();  // 初期値反映
+                loadState();
+                updateGrade();
                 updateMemo();
                 adjustDeptFontSize();
                 resizeCanvas();
             });
         } else {
             initializeGradeSelect();
-            updateGrade();  // 初期値反映
+            loadState();
+            updateGrade();
             updateMemo();
             adjustDeptFontSize();
             resizeCanvas();
