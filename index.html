@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>部員図鑑ジェネレーター</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary-blue: #0088ff;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: #1e1e1e;
+            color: #333;
+        }
+
+        .preview-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 20px; 
+            box-sizing: border-box;
+        }
+        
+        /* 1920x1080の絶対サイズで固定し、PNGを背景にする */
+        .export-canvas {
+            width: 1920px;
+            height: 1080px;
+            background-color: white;
+            background-image: url('アートボード 1.png'); /* ◀ PNGファイル名をここで指定 */
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+            transform-origin: center center;
+        }
+
+        .controls {
+            width: 400px;
+            background-color: #f5f5f5;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            border-left: 1px solid #ccc;
+            z-index: 10;
+        }
+        
+        .controls h2 { margin-top: 0; font-size: 1.2rem; color: #333; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
+        .input-group input[type="text"],
+        .input-group input[type="number"],
+        .input-group textarea {
+            width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
+        }
+        .input-group textarea { height: 120px; resize: vertical; }
+        .slider-group { display: flex; align-items: center; gap: 10px; }
+        .slider-group input[type="range"] { flex: 1; }
+        .slider-value { width: 40px; text-align: right; font-weight: bold; }
+        
+        .btn-export {
+            display: block; width: 100%; padding: 15px; background-color: var(--primary-blue);
+            color: white; border: none; border-radius: 5px; font-size: 1.1rem;
+            font-weight: bold; cursor: pointer; margin-top: 20px; transition: background 0.2s;
+        }
+        .btn-export:hover { background-color: #0066cc; }
+
+        /* =========================================
+           ここから全て 1920x1080 に対する【絶対px座標】
+           ========================================= */
+        .overlay {
+            position: absolute;
+            z-index: 2;
+        }
+        
+        #preview-icon {
+            top: 111px; left: 96px;
+            width: 192px; height: 192px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: transparent;
+        }
+        
+        #preview-grade {
+            top: 35px; left: 796px;
+            font-size: 34px; font-weight: 900; color: white; letter-spacing: 2px;
+        }
+
+        #preview-name {
+            top: 172px; left: 345px;
+            font-size: 72px; font-weight: 900; color: #00B0F0; white-space: nowrap;
+        }
+
+        #preview-dept {
+            top: 486px; left: 144px;
+            font-size: 36px; font-weight: bold; color: #00B0F0;
+            transition: font-size 0.3s ease;
+        }
+
+        /* %表記の共通スタイル (幅140px固定で中央揃え) */
+        .percent-text-white {
+            font-size: 46px; font-weight: 900; color: white;
+            text-align: center; width: 140px;
+        }
+
+        .percent-text-digicre-skyblue {
+            font-size: 77px; font-weight: 900; color: #00B0F0;
+            text-align: center; width: 140px;
+        }
+
+        /* 出没度 (幅140pxの中央が円の中心に来るようにleftを逆算) */
+        #preview-discord { top: 154px; left: 1063px; }
+        #preview-mattermost { top: 154px; left: 1504px; }
+
+        /* 興味ある度 */
+        /* 1列目 */
+        #preview-pg { top: 628px; left: 122px; }
+        #preview-dtm { top: 779px; left: 122px; }
+        #preview-3dcg { top: 928px; left: 122px; }
+        /* 2列目 */
+        #preview-illust { top: 628px; left: 400px; }
+        #preview-movie { top: 779px; left: 400px; }
+        #preview-word { top: 928px; left: 400px; }
+        /* 3列目 */
+        #preview-vtuber { top: 628px; left: 679px; }
+        #preview-sysdev { top: 779px; left: 679px; }
+        #preview-design { top: 928px; left: 679px; }
+
+        /* MEMOエリア */
+        #preview-memo {
+            top: 430px; left: 1040px;
+            width: 800px; height: 550px;
+            font-size: 26px; line-height: 1.5; color: #333; overflow: hidden; word-wrap: break-word;
+        }
+        #preview-memo h1, #preview-memo h2, #preview-memo h3 { margin-top: 0; color: #00B0F0; margin-bottom: 5px; }
+        #preview-memo p { margin-top: 0; margin-bottom: 8px; }
+        #preview-memo ul { padding-left: 30px; margin-top: 0; margin-bottom: 8px;}
+    </style>
+</head>
+<body>
+
+    <div class="preview-wrapper" id="preview-wrapper">
+        <div class="export-canvas" id="export-target">
+            <img id="preview-icon" class="overlay" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=">
+            <div id="preview-grade" class="overlay">23rd</div>
+            <div id="preview-name" class="overlay">デジペン</div>
+            <div id="preview-dept" class="overlay">工学部 情報・通信工学課程 情報通信コース</div>
+            
+            <div id="preview-discord" class="overlay percent-text-digicre-skyblue">50</div>
+            <div id="preview-mattermost" class="overlay percent-text-digicre-skyblue">50</div>
+            
+            <div id="preview-pg" class="overlay percent-text-white">50</div>
+            <div id="preview-illust" class="overlay percent-text-white">50</div>
+            <div id="preview-vtuber" class="overlay percent-text-white">50</div>
+            
+            <div id="preview-dtm" class="overlay percent-text-white">50</div>
+            <div id="preview-movie" class="overlay percent-text-white">50</div>
+            <div id="preview-sysdev" class="overlay percent-text-white">50</div>
+            
+            <div id="preview-3dcg" class="overlay percent-text-white">50</div>
+            <div id="preview-word" class="overlay percent-text-white">50</div>
+            <div id="preview-design" class="overlay percent-text-white">50</div>
+
+            <div id="preview-memo" class="overlay"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <h2>プロフィール情報</h2>
+        <div class="input-group">
+            <label>GRADE (期)</label>
+            <input type="text" id="input-grade" value="23rd" oninput="updateText('grade')">
+        </div>
+        <div class="input-group">
+            <label>アイコン画像</label>
+            <input type="file" id="input-icon" accept="image/*" onchange="updateIcon(event)">
+        </div>
+        <div class="input-group">
+            <label>NAME</label>
+            <input type="text" id="input-name" value="デジペン" oninput="updateText('name')">
+        </div>
+        <div class="input-group">
+            <label>所属学科</label>
+            <input type="text" id="input-dept" value="工学部 情報・通信工学課程 情報通信コース" oninput="updateText('dept')">
+        </div>
+
+        <hr>
+        <h2>出没度・興味ある度</h2>
+        <div id="sliders-container"></div>
+
+        <hr>
+        <h2>MEMO (Markdown対応)</h2>
+        <div class="input-group">
+            <textarea id="input-memo" oninput="updateMemo()">## ここは自由記述欄です
+Markdownが利用できます！
+
+## たとえば
+「## 」を書くと見出しになります</textarea>
+        </div>
+
+        <button class="btn-export" onclick="exportImage()">画像として保存</button>
+    </div>
+
+    <script>
+        const sliders = [
+            { id: 'discord', label: 'Discord 出没度' },
+            { id: 'mattermost', label: 'Mattermost 出没度' },
+            { id: 'pg', label: 'PG 興味ある度' },
+            { id: 'illust', label: 'イラスト 興味ある度' },
+            { id: 'vtuber', label: 'VTuber 興味ある度' },
+            { id: 'dtm', label: 'DTM 興味ある度' },
+            { id: 'movie', label: 'Movie 興味ある度' },
+            { id: 'sysdev', label: 'SysDev 興味ある度' },
+            { id: '3dcg', label: '3DCG 興味ある度' },
+            { id: 'word', label: '文字書き 興味ある度' },
+            { id: 'design', label: 'デザイン 興味ある度' }
+        ];
+
+        const slidersContainer = document.getElementById('sliders-container');
+        sliders.forEach(s => {
+            const div = document.createElement('div');
+            div.className = 'input-group slider-group';
+            div.innerHTML = `
+                <label style="width:140px; margin:0; font-size:0.85rem;">${s.label}</label>
+                <input type="range" min="0" max="100" value="50" id="input-${s.id}" oninput="updateSlider('${s.id}')">
+                <span class="slider-value" id="val-${s.id}">50%</span>
+            `;
+            slidersContainer.appendChild(div);
+        });
+
+        function updateText(id) {
+            document.getElementById(`preview-${id}`).innerText = document.getElementById(`input-${id}`).value;
+            if (id === 'dept') {
+                adjustDeptFontSize();
+            }
+        }
+
+        // ピクセルベースでのフォントサイズ調整に変更
+        function adjustDeptFontSize() {
+            const deptElement = document.getElementById('preview-dept');
+            const textLength = deptElement.innerText.length;
+            
+            let fontSize;
+            if (textLength <= 21) {
+                fontSize = '36px';
+            } else if (textLength <= 23) {
+                fontSize = '32px';
+            } else if (textLength <= 25) {
+                fontSize = '29px';
+            } else {
+                fontSize = '21px';
+            }
+            
+            deptElement.style.fontSize = fontSize;
+        }
+
+        function updateSlider(id) {
+            const val = document.getElementById(`input-${id}`).value;
+            document.getElementById(`val-${id}`).innerText = val + '%';
+            document.getElementById(`preview-${id}`).innerText = val;
+        }
+
+        function updateIcon(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('preview-icon');
+                    img.src = e.target.result;
+                    img.style.backgroundColor = 'white';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function updateMemo() {
+            const rawText = document.getElementById('input-memo').value;
+            document.getElementById('preview-memo').innerHTML = marked.parse(rawText);
+        }
+
+        // プレビュー領域の自動ズーム処理（チラつきません）
+        function resizeCanvas() {
+            const wrapper = document.getElementById('preview-wrapper');
+            const canvas = document.getElementById('export-target');
+            const scale = Math.min(wrapper.clientWidth / 1920, wrapper.clientHeight / 1080) * 0.95;
+            canvas.style.transform = `scale(${scale})`;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        
+        // 初期化
+        updateMemo();
+        adjustDeptFontSize();
+        resizeCanvas();
+
+        function exportImage() {
+            const target = document.getElementById('export-target');
+            
+            html2canvas(target, {
+                scale: 1,
+                width: 1920,
+                height: 1080,
+                useCORS: true,
+                backgroundColor: '#ffffff', // null(透明)をやめて、念のため白背景で固定
+                onclone: (clonedDoc) => {
+                    const clonedTarget = clonedDoc.getElementById('export-target');
+                    const wrapper = clonedDoc.getElementById('preview-wrapper');
+
+                    // 1. ズームを解除
+                    clonedTarget.style.transform = 'none';
+                    
+                    // 2. 悪さをする影（box-shadow）を書き出し時だけ消去
+                    clonedTarget.style.boxShadow = 'none';
+
+                    // 3. Flexboxによる座標ズレ（左側が黒くなる原因）を強制リセット
+                    if (wrapper) {
+                        wrapper.style.display = 'block';
+                        wrapper.style.padding = '0';
+                    }
+                    clonedTarget.style.position = 'absolute';
+                    clonedTarget.style.left = '0';
+                    clonedTarget.style.top = '0';
+                    clonedTarget.style.margin = '0';
+                }
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'profile_card.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(err => {
+                console.error("Export failed:", err);
+                alert("画像のエクスポートに失敗しました。");
+            });
+        }
+    </script>
+</body>
+</html>
