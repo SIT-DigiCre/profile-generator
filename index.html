@@ -213,7 +213,7 @@
             div.innerHTML = `
                 <div style="display: flex; justify-content: space-between; margin-bottom: 4px; padding: 0 4px;">
                     <label style="font-size: 0.9rem; color: #444; font-weight: 500;">${s.label}</label>
-                    <span id="val-${s.id}" style="font-size: 0.9rem; font-weight: bold; color: var(--primary-blue);">${s.id === 'discord' || s.id === 'mattermost' ? '50' : '50%'}</span>
+                    <span id="val-${s.id}" style="font-size: 0.9rem; font-weight: bold; color: var(--primary-blue);">50%</span>
                 </div>
                 <md-slider min="0" max="100" value="50" id="input-${s.id}" oninput="updateSlider('${s.id}')" style="width: 100%;"></md-slider>
             `;
@@ -242,7 +242,7 @@
 
         function updateSlider(id) {
             const val = document.getElementById(`input-${id}`).value;
-            const displayVal = (id === 'discord' || id === 'mattermost') ? val : val + '%';
+            const displayVal = val + '%';
             document.getElementById(`val-${id}`).innerText = displayVal;
             document.getElementById(`preview-${id}`).innerText = val;
         }
