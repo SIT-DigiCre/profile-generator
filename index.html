@@ -154,7 +154,12 @@
     <div class="controls">
         <h2 style="margin-bottom: 20px;">プロフィール情報</h2>
         
-        <md-outlined-text-field label="GRADE (期)" id="input-grade" value="23rd" oninput="updateText('grade')" style="width: 100%; margin-bottom: 16px;"></md-outlined-text-field>
+        <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 0.75rem; color: #999; margin-bottom: 4px; margin-left: 4px; font-weight: 500;">GRADE (期)</label>
+            <select id="input-grade" onchange="updateGrade()" style="width: 100%; padding: 12px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; font-family: inherit; box-sizing: border-box;">
+                <option value="">選択してください</option>
+            </select>
+        </div>
         
         <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
             <input type="file" id="input-icon" accept="image/*" onchange="updateIcon(event)" style="display: none;">
@@ -196,6 +201,49 @@
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
     <script>
+        // 序数サフィックス（st, nd, rd, th）を取得する関数
+        function getOrdinalSuffix(num) {
+            if (num >= 10 && num <= 20) {
+                return 'th';
+            }
+            const mod = num % 10;
+            switch (mod) {
+                case 1: return 'st';
+                case 2: return 'nd';
+                case 3: return 'rd';
+                default: return 'th';
+            }
+        }
+
+        // 数字から序数形式を生成する関数
+        function formatOrdinal(num) {
+            if (!num) return '';
+            return num + getOrdinalSuffix(num);
+        }
+
+        // グレード選択ドロップダウンを初期化
+        function initializeGradeSelect() {
+            const select = document.getElementById('input-grade');
+            for (let i = 14; i <= 23; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = formatOrdinal(i);
+                if (i === 23) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            }
+        }
+
+        // グレード更新関数
+        function updateGrade() {
+            const selectedValue = document.getElementById('input-grade').value;
+            if (selectedValue) {
+                const ordinal = formatOrdinal(parseInt(selectedValue));
+                document.getElementById('preview-grade').innerText = ordinal;
+            }
+        }
+
         const sliders = [
             { id: 'discord', label: 'Discord 出没度' },
             { id: 'mattermost', label: 'Mattermost 出没度' },
@@ -309,11 +357,15 @@
         // 初期化をDOMContentLoadedの後に実行
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
+                initializeGradeSelect();
+                updateGrade();  // 初期値反映
                 updateMemo();
                 adjustDeptFontSize();
                 resizeCanvas();
             });
         } else {
+            initializeGradeSelect();
+            updateGrade();  // 初期値反映
             updateMemo();
             adjustDeptFontSize();
             resizeCanvas();
