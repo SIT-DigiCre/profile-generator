@@ -42,11 +42,9 @@
 
         .preview-wrapper {
             flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            /* Flexboxによる中央寄せを廃止し、相対配置の基準値にする */
+            position: relative;
             overflow: hidden;
-            padding: 20px; 
             box-sizing: border-box;
         }
         
@@ -54,13 +52,18 @@
             width: 1920px;
             height: 1080px;
             background-color: white;
-            background-image: url('background.png');
+            background-image: url('background.png'); /* ◀ ご自身の環境に合わせてファイル名を調整してください */
             background-size: cover;
             background-position: center;
-            position: relative;
+            
+            /* 【変更】Flexboxの影響を受けない絶対配置に */
+            position: absolute;
+            transform-origin: 0 0; /* 左上を基準に縮小する */
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            flex-shrink: 0;
-            transform-origin: center center;
+            
+            /* 【変更】計算が終わるまで非表示にしてチラつきを防ぐ */
+            opacity: 0;
+            transition: opacity 0.3s ease; 
         }
 
         .controls {
@@ -82,12 +85,11 @@
             font-weight: 500;
         }
 
-        /* シンプルなカスタムボタンのスタイル */
         .btn-simple {
             background-color: #00B0F0;
             color: white;
             border: none;
-            border-radius: 4px; /* MUIのテキストフィールドと角丸を合わせる */
+            border-radius: 4px; 
             padding: 10px 16px;
             font-size: 0.95rem;
             font-weight: bold;
@@ -95,9 +97,7 @@
             transition: opacity 0.2s;
             font-family: inherit;
         }
-        .btn-simple:hover {
-            opacity: 0.8;
-        }
+        .btn-simple:hover { opacity: 0.8; }
         
         .btn-export {
             width: 100%;
@@ -105,6 +105,7 @@
             font-size: 1.1rem;
         }
 
+        /* ----- ここから下は座標設定 (変更なし) ----- */
         .m-plus-1p-bold { font-family: "M PLUS 1p", sans-serif; font-weight: 700; font-style: normal; }
         .m-plus-1p-extrabold { font-family: "M PLUS 1p", sans-serif; font-weight: 800; font-style: normal; }
         .overlay { position: absolute; z-index: 2; }
@@ -231,15 +232,10 @@
             const textLength = deptElement.innerText.length;
             
             let fontSize;
-            if (textLength <= 21) {
-                fontSize = '36px';
-            } else if (textLength <= 23) {
-                fontSize = '32px';
-            } else if (textLength <= 25) {
-                fontSize = '29px';
-            } else {
-                fontSize = '21px';
-            }
+            if (textLength <= 21) fontSize = '36px';
+            else if (textLength <= 23) fontSize = '32px';
+            else if (textLength <= 25) fontSize = '29px';
+            else fontSize = '21px';
             
             deptElement.style.fontSize = fontSize;
         }
@@ -270,15 +266,45 @@
             document.getElementById('preview-memo').innerHTML = marked.parse(rawText);
         }
 
+        // 【変更】座標を計算して絶対にど真ん中に配置するロジック
         function resizeCanvas() {
             const wrapper = document.getElementById('preview-wrapper');
             const canvas = document.getElementById('export-target');
-            const scale = Math.min(wrapper.clientWidth / 1920, wrapper.clientHeight / 1080) * 0.95;
+            if (!wrapper || !canvas) return;
+
+            // 余白を両サイド20px(計40px)確保
+            const availableWidth = wrapper.clientWidth - 40;
+            const availableHeight = wrapper.clientHeight - 40;
+
+            // 1920x1080に対する縮小率を計算
+            const scale = Math.min(availableWidth / 1920, availableHeight / 1080);
+            
+            // 縮小された状態の幅と高さを計算
+            const scaledWidth = 1920 * scale;
+            const scaledHeight = 1080 * scale;
+            
+            // 残った空間の半分を left, top に設定することで完全に中央寄せ
+            const left = (wrapper.clientWidth - scaledWidth) / 2;
+            const top = (wrapper.clientHeight - scaledHeight) / 2;
+
             canvas.style.transform = `scale(${scale})`;
+            canvas.style.left = `${left}px`;
+            canvas.style.top = `${top}px`;
+            
+            // 計算が終わったらフワッと表示する
+            if (canvas.style.opacity !== '1') {
+                canvas.style.opacity = '1';
+            }
         }
 
-        window.addEventListener('resize', resizeCanvas);
-        
+        // 【変更】画面サイズの変動を直接監視（マテリアルUIの遅延描画にも対応）
+        const resizeObserver = new ResizeObserver(() => {
+            requestAnimationFrame(() => {
+                resizeCanvas();
+            });
+        });
+        resizeObserver.observe(document.getElementById('preview-wrapper'));
+
         // 初期化
         updateMemo();
         adjustDeptFontSize();
@@ -295,19 +321,13 @@
                 backgroundColor: '#ffffff',
                 onclone: (clonedDoc) => {
                     const clonedTarget = clonedDoc.getElementById('export-target');
-                    const wrapper = clonedDoc.getElementById('preview-wrapper');
-
+                    
+                    // キャプチャ時だけズームを解除し、座標を左上に戻す
                     clonedTarget.style.transform = 'none';
+                    clonedTarget.style.left = '0px';
+                    clonedTarget.style.top = '0px';
                     clonedTarget.style.boxShadow = 'none';
-
-                    if (wrapper) {
-                        wrapper.style.display = 'block';
-                        wrapper.style.padding = '0';
-                    }
-                    clonedTarget.style.position = 'absolute';
-                    clonedTarget.style.left = '0';
-                    clonedTarget.style.top = '0';
-                    clonedTarget.style.margin = '0';
+                    clonedTarget.style.opacity = '1';
                 }
             }).then(canvas => {
                 const link = document.createElement('a');
