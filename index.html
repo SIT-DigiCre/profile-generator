@@ -98,7 +98,7 @@
         .m-plus-1p-extrabold { font-family: "M PLUS 1p", sans-serif; font-weight: 800; font-style: normal; }
         .overlay { position: absolute; z-index: 2; }
         
-        #preview-icon { top: 111px; left: 96px; width: 192px; height: 192px; border-radius: 50%; object-fit: cover; background-color: transparent; }
+        #preview-icon { top: 111px; left: 96px; width: 192px; height: 192px; border-radius: 50%; background-color: transparent; background-repeat: no-repeat; background-size: cover; background-position: center center; }
         #preview-grade { top: 30px; left: 796px; font-size: 34px; font-weight: 900; color: white; letter-spacing: 2px; font-family: "M PLUS 1p", sans-serif; font-weight: 700; }
         #preview-name { top: 172px; left: 345px; font-size: 72px; font-weight: 900; color: black; font-family: "M PLUS 1p", sans-serif; font-weight: 800; transition: font-size 0.3s ease; width: 587.5px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.2; }
         #preview-dept { top: 486px; left: 144px; font-size: 36px; font-weight: bold; color: black; transition: font-size 0.3s ease; font-family: "M PLUS 1p", sans-serif; font-weight: 700; width: 745px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.2; }
@@ -127,7 +127,7 @@
 
     <div class="preview-wrapper" id="preview-wrapper">
         <div class="export-canvas" id="export-target">
-            <img id="preview-icon" class="overlay" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=">
+            <div id="preview-icon" class="overlay"></div>
             <div id="preview-grade" class="overlay">23rd</div>
             <div id="preview-name" class="overlay">デジペン</div>
             <div id="preview-dept" class="overlay">工学部 情報・通信工学課程 情報通信コース</div>
@@ -203,6 +203,25 @@
     <script>
         // LocalStorage保存キー
         const STORAGE_KEY = 'profileGeneratorState';
+        const EMPTY_ICON_DATA_URL = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+        let currentIconDataUrl = EMPTY_ICON_DATA_URL;
+
+        function setPreviewIcon(dataUrl, fileLabel) {
+            const icon = document.getElementById('preview-icon');
+            if (dataUrl && dataUrl !== EMPTY_ICON_DATA_URL) {
+                currentIconDataUrl = dataUrl;
+                icon.style.backgroundImage = `url("${dataUrl}")`;
+                icon.style.backgroundColor = 'white';
+            } else {
+                currentIconDataUrl = EMPTY_ICON_DATA_URL;
+                icon.style.backgroundImage = 'none';
+                icon.style.backgroundColor = 'transparent';
+            }
+
+            if (fileLabel !== undefined) {
+                document.getElementById('file-name-display').innerText = fileLabel;
+            }
+        }
 
         // 入力状況をLocalStorageに保存
         function saveState() {
@@ -211,7 +230,7 @@
                 name: document.getElementById('input-name').value,
                 dept: document.getElementById('input-dept').value,
                 memo: document.getElementById('input-memo').value,
-                icon: document.getElementById('preview-icon').src,
+                icon: currentIconDataUrl,
                 sliders: {}
             };
 
@@ -256,11 +275,8 @@
                 }
 
                 // アイコン復元
-                if (state.icon && state.icon !== 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=') {
-                    const img = document.getElementById('preview-icon');
-                    img.src = state.icon;
-                    img.style.backgroundColor = 'white';
-                    document.getElementById('file-name-display').innerText = '(復元済み)';
+                if (state.icon && state.icon !== EMPTY_ICON_DATA_URL) {
+                    setPreviewIcon(state.icon, '(復元済み)');
                 }
 
                 // スライダー復元
@@ -438,9 +454,7 @@
                 document.getElementById('file-name-display').innerText = file.name;
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const img = document.getElementById('preview-icon');
-                    img.src = e.target.result;
-                    img.style.backgroundColor = 'white';
+                    setPreviewIcon(e.target.result, file.name);
                     saveState();
                 }
                 reader.readAsDataURL(file);
